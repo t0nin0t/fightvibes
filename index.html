@@ -2074,9 +2074,11 @@ function showToast(msg){document.getElementById('toastMsg').textContent=msg;cons
 // ═══════════════════════════════════════════════════
 checkDB();
 goHome();
-loadAgg('ufc326').then(()=>{renderRecent();});
-renderRecent();
-renderUpcoming();
+// Load all past event aggregates in parallel, re-render once done
+Promise.all(EVENTS.map(ev=>loadAgg(ev.id))).then(()=>{
+  renderRecent();
+  renderUpcoming();
+});
 if(IS_ADMIN)document.title='[ADMIN] '+document.title;
 </script>
 </body>
