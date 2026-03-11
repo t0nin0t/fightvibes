@@ -709,6 +709,15 @@ async function loadAgg(evId){
   }catch(e){console.warn('loadAgg',e.message);}
 }
 function getAgg(evId,fId){return AGG[`${evId}|${fId}`]||null;}
+function getEventAvg(ev){
+  // Compute overall avg from all individual fight ratings
+  const allFights=Object.values(ev.tabs).flatMap(t=>t.fights);
+  const rated=allFights.map(f=>getAgg(ev.id,fid(f.f1,f.f2))).filter(a=>a&&a.cnt>0);
+  if(!rated.length)return null;
+  const avg=(rated.reduce((s,a)=>s+parseFloat(a.avg),0)/rated.length).toFixed(1);
+  const cnt=Math.round(rated.reduce((s,a)=>s+a.cnt,0)/rated.length);
+  return {avg,cnt};
+}
 
 async function checkDB(){
   try{await SB.select('ratings','limit=1');document.getElementById('dbDot').style.background='#22c55e';document.getElementById('dbDot').title='Connected';}
@@ -864,7 +873,7 @@ function adminLockReddit(fightKey){
 // DATA
 // ═══════════════════════════════════════════════════
 const WIN_H = 30; // hours after event start that voting stays open
-function evWinEnd(ev){ return new Date(new Date(ev.timeUTC).getTime() + WIN_H*3600*1000); }
+function evWinEnd(ev){ if(ev.winOverride)return new Date(ev.winOverride); return new Date(new Date(ev.timeUTC).getTime() + WIN_H*3600*1000); }
 function evInWindow(ev){ const now=Date.now(); const start=new Date(ev.timeUTC).getTime(); return now>=start && now<evWinEnd(ev).getTime(); }
 function winLeft(ev){ if(!ev)return null; const d=evWinEnd(ev)-Date.now(); if(d<=0)return null; return[Math.floor(d/3600000),Math.floor((d%3600000)/60000),Math.floor((d%60000)/1000)].map(n=>String(n).padStart(2,'0')).join(':'); }
 
@@ -914,7 +923,7 @@ const WC_ORDER=['All','HW','LHW','MW','WW','LW','FW','BW','FLW','W.BW','W.FLW','
 const EVENTS=[
   {id:'ufc326',name:'UFC 326',subtitle:'Holloway vs. Oliveira 2',
    date:'Mar 7',day:7,year:2026,venue:'T-Mobile Arena · Las Vegas',
-   timeUTC:'2026-03-08T03:00:00Z',winOverride:'2026-03-31T23:59:00Z',
+   timeUTC:'2026-03-08T03:00:00Z',winOverride:'2026-04-30T23:59:00Z',
    fotn:{f1:'Gregory Rodrigues',f2:'Brunno Ferreira',cls:'Middleweight',note:'Performance bonuses via Tapology'},
    tabs:{
     main:{label:'Main Card',fights:[
@@ -938,7 +947,7 @@ const EVENTS=[
   }},
   {id:'ufcfn-moreno',name:'UFC Fight Night',subtitle:'Moreno vs. Kavanagh',
    date:'Feb 28',day:28,year:2026,venue:'Foro Sol · Mexico City',
-   timeUTC:'2026-03-01T02:00:00Z',winOverride:'2026-03-31T23:59:00Z',
+   timeUTC:'2026-03-01T02:00:00Z',winOverride:'2026-04-30T23:59:00Z',
    fotn:{f1:'Brandon Moreno',f2:"Lone'er Kavanagh",cls:'Flyweight',note:''},
    tabs:{
     main:{label:'Main Card',fights:[
@@ -963,7 +972,7 @@ const EVENTS=[
   }},
   {id:'ufc325',name:'UFC 325',subtitle:'Volkanovski vs. Lopes 2',
    date:'Jan 31',day:31,year:2026,venue:'Qudos Bank Arena · Sydney',
-   timeUTC:'2026-02-01T10:00:00Z',winOverride:'2026-03-31T23:59:00Z',
+   timeUTC:'2026-02-01T10:00:00Z',winOverride:'2026-04-30T23:59:00Z',
    fotn:{f1:'Alexander Volkanovski',f2:'Diego Lopes',cls:'Featherweight',note:''},
    tabs:{
     main:{label:'Main Card',fights:[
@@ -981,7 +990,7 @@ const EVENTS=[
   }},
   {id:'ufc324',name:'UFC 324',subtitle:'Gaethje vs. Pimblett',
    date:'Jan 24',day:24,year:2026,venue:'T-Mobile Arena · Las Vegas',
-   timeUTC:'2026-01-25T03:00:00Z',winOverride:'2026-03-31T23:59:00Z',
+   timeUTC:'2026-01-25T03:00:00Z',winOverride:'2026-04-30T23:59:00Z',
    fotn:{f1:'Justin Gaethje',f2:'Paddy Pimblett',cls:'Lightweight',note:''},
    tabs:{
     main:{label:'Main Card',fights:[
@@ -1179,7 +1188,7 @@ function updateNowBar(){
   }
 }
 function nowBarClick(){const oe=EVENTS.find(e=>evInWindow(e));if(oe)openEvent(oe.id);}
-function nowBarRate(){const oe=EVENTS.find(e=>evInWindow(e));if(oe)openModal(oe.name+': '+oe.subtitle,'Overall Card',oe.id,'overall',null,null);}
+function nowBarRate(){const oe=EVENTS.find(e=>evInWindow(e));if(oe)openEvent(oe.id);}
 updateNowBar();setInterval(updateNowBar,1000);
 
 // ═══════════════════════════════════════════════════
@@ -1217,10 +1226,10 @@ function openUpcoming(idx){
 // ═══════════════════════════════════════════════════
 // SCORE DISPLAY HELPER
 // ═══════════════════════════════════════════════════
-function scoreCol(evId,fId){
-  const a=getAgg(evId,fId);
-  if(!a||a.cnt===0)return '<div class="ev-sc-empty">no ratings</div>';
-  return `<div class="ev-sc-n ${SC(a.avg)}">${a.avg}</div><div class="ev-sc-word ${SC(a.avg)}">${WORD(a.avg)}</div><div class="ev-sc-cnt">${a.cnt} rating${a.cnt===1?'':'s'}</div>`;
+function scoreCol(ev){
+  const a=getEventAvg(ev);
+  if(!a)return '<div class="ev-sc-empty">no ratings</div>';
+  return `<div class="ev-sc-n ${SC(a.avg)}">${a.avg}</div><div class="ev-sc-word ${SC(a.avg)}">${WORD(a.avg)}</div><div class="ev-sc-cnt">~${a.cnt} ratings</div>`;
 }
 
 // ═══════════════════════════════════════════════════
@@ -1267,7 +1276,7 @@ function renderHero(){
           ${myOverall?'★'.repeat(myOverall.stars)+'☆'.repeat(5-myOverall.stars):'☆☆☆☆☆ — tap to rate'}
         </div>
       </div>
-      <button class="hero-btn" onclick="event.stopPropagation();openModal('${ev.name}: ${ev.subtitle}','Overall Card','${ev.id}','overall',null,null)">${myOverall?'Edit Rating ✎':'Rate This Event →'}</button>
+      <button class="hero-btn" onclick="event.stopPropagation();openEvent('${ev.id}')">Rate Fights →</button>
     </div>
     <div class="hero-fights">${fightsHtml}</div>
   </div>`;
@@ -1280,7 +1289,6 @@ function renderHero(){
 function renderRecent(){
   renderHero();
   document.getElementById('recentList').innerHTML=EVENTS.map(ev=>{
-    const myR=LOCAL.get(ev.id,'overall');
     const et=fmtET(ev.timeUTC),lt=fmtLocal(ev.timeUTC);
     return `<div class="ev-card" onclick="openEvent('${ev.id}')">
       <div class="ev-acc"></div>
@@ -1293,8 +1301,8 @@ function renderRecent(){
           <div class="ev-time"><b>${et}</b>${userTZ!=='America/New_York'&&lt?' · '+lt:''}</div>
         </div>
         <div class="ev-sc-col">
-          ${scoreCol(ev.id,'overall')}
-          ${evInWindow(ev)?`<button class="ev-rate-btn" onclick="event.stopPropagation();openModal('${ev.name+': '+ev.subtitle}','Overall Card','${ev.id}','overall',null,null)">${myR?'edit →':'rate →'}</button>`:'<span class="ev-rate-btn" style="color:var(--muted);cursor:default;font-size:9px">closed</span>'}
+          ${scoreCol(ev)}
+          <span class="ev-rate-btn" style="color:var(--muted);cursor:default;font-size:9px">${evInWindow(ev)?'open →':'closed'}</span>
         </div>
       </div>
     </div>`;
@@ -1675,7 +1683,7 @@ function renderDetail(){
   const inWin=evInWindow(ev),wl=winLeft(ev);
   const myOverall=LOCAL.get(ev.id,'overall');
   const evName=ev.name+': '+ev.subtitle;
-  const agg=getAgg(ev.id,'overall');
+  const agg=getEventAvg(ev);
   const et=fmtET(ev.timeUTC),lt=fmtLocal(ev.timeUTC);
   const tabsHtml=Object.entries(ev.tabs).map(([k,t])=>`<button class="tab-btn ${curTab===k?'on':''}" onclick="switchTab('${k}')">${t.label}</button>`).join('');
   // compute fight list block BEFORE template literal to avoid nested backtick issues
@@ -1726,7 +1734,7 @@ function renderDetail(){
         return `<div class="win-row">
           <span class="win-dot"></span>
           <span class="win-txt"><b>Rating window open</b> — closes in <span style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--red)" id="winTimer">${wl}</span></span>
-          <button class="btn-red" onclick="openModal('${evName}','Overall Card','${ev.id}','overall',null,null)">${myOverall?'Edit Rating':'Rate This Event'}</button>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--dim)">Rate individual fights below</span>
         </div>`;
       })()}
     </div>
