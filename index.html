@@ -1092,7 +1092,38 @@ document.addEventListener('click',e=>{if(!e.target.closest('.menu-wrap'))closeMe
 // COUNTDOWN
 // ═══════════════════════════════════════════════════
 const CD_T=new Date('2026-03-15T01:00:00Z');
-function tick(){let d=Math.max(0,(CD_T-Date.now())/1000);const p=[Math.floor(d/86400),Math.floor((d%=86400,d/3600)),Math.floor((d%=3600,d/60)),Math.floor(d%60)];['cd-d','cd-h','cd-m','cd-s'].forEach((id,i)=>document.getElementById(id).textContent=String(p[i]).padStart(2,'0'));}
+function tick(){
+  const now=Date.now();
+  let d=Math.max(0,(CD_T-now)/1000);
+  const p=[Math.floor(d/86400),Math.floor((d%=86400,d/3600)),Math.floor((d%=3600,d/60)),Math.floor(d%60)];
+  ['cd-d','cd-h','cd-m','cd-s'].forEach((id,i)=>document.getElementById(id).textContent=String(p[i]).padStart(2,'0'));
+  // "Voting opens in" badge — show when next event is within 48h
+  const badge=document.getElementById('votingOpensBadge');
+  if(badge){
+    const nextEv=UPCOMING[0];
+    if(nextEv){
+      const evStart=new Date(nextEv.timeUTC).getTime();
+      const tillStart=evStart-now;
+      const started=now>=evStart;
+      const votingEnd=evStart+WIN_H*3600000;
+      const votingOpen=now>=evStart&&now<votingEnd;
+      if(votingOpen){
+        badge.style.display='block';
+        badge.textContent='🗳 VOTING OPEN NOW';
+        badge.style.color='var(--green)';
+      } else if(!started&&tillStart<48*3600000){
+        // show "voting opens in X"
+        const secsLeft=Math.floor(tillStart/1000);
+        const dh=Math.floor(secsLeft/3600),dm=Math.floor((secsLeft%3600)/60),ds=secsLeft%60;
+        badge.style.display='block';
+        badge.style.color='var(--red)';
+        badge.textContent='VOTING OPENS IN '+String(dh).padStart(2,'0')+'h '+String(dm).padStart(2,'0')+'m '+String(ds).padStart(2,'0')+'s';
+      } else {
+        badge.style.display='none';
+      }
+    }
+  }
+}
 tick();setInterval(tick,1000);
 (()=>{const et=fmtET('2026-03-15T01:00:00Z'),lt=fmtLocal('2026-03-15T01:00:00Z');document.getElementById('cdET').textContent=et;if(userTZ!=='America/New_York'&&lt)document.getElementById('cdLocal').textContent='Your time: '+lt;})();
 function updateNowBar(){
@@ -1219,7 +1250,7 @@ function renderRecent(){
         </div>
         <div class="ev-sc-col">
           ${scoreCol(ev.id,'overall')}
-          <button class="ev-rate-btn" onclick="event.stopPropagation();openModal('${ev.name}: ${ev.subtitle}','Overall Card','${ev.id}','overall',null,null)">${myR?'edit →':'rate →'}</button>
+          ${evInWindow(ev)?`<button class="ev-rate-btn" onclick="event.stopPropagation();openModal('${ev.name+': '+ev.subtitle}','Overall Card','${ev.id}','overall',null,null)">${myR?'edit →':'rate →'}</button>`:'<span class="ev-rate-btn" style="color:var(--muted);cursor:default;font-size:9px">closed</span>'}
         </div>
       </div>
     </div>`;
@@ -1592,6 +1623,23 @@ function renderDetail(){
   const agg=getAgg(ev.id,'overall');
   const et=fmtET(ev.timeUTC),lt=fmtLocal(ev.timeUTC);
   const tabsHtml=Object.entries(ev.tabs).map(([k,t])=>`<button class="tab-btn ${curTab===k?'on':''}" onclick="switchTab('${k}')">${t.label}</button>`).join('');
+  // compute fight list block BEFORE template literal to avoid nested backtick issues
+  const ph=evPhase(ev);
+  const tOpen=tabIsOpen(ev,curTab);
+  let fightBlock;
+  if((ph==='live-early'&&curTab!=='early')||(ph==='live-prelims'&&curTab==='main')){
+    const tLeft=tabTimeLeft(ev,curTab);
+    fightBlock='<div style="padding:20px;text-align:center;color:var(--dim)"><div style="font-size:22px;margin-bottom:8px">🥊</div><div style="font-weight:600;color:var(--text2);margin-bottom:4px">Fights going on — get ready to vote</div><div style="font-size:12px">'+tab.label+' voting opens in <span style="color:var(--red);font-family:IBM Plex Mono,monospace;font-weight:700">'+(tLeft||'soon')+'</span></div></div>';
+  } else {
+    const rateFooter=tOpen
+      ? ('<div class="sc-footer"><span>Rate '+tab.label+' as a whole</span>'
+        +'<button class="btn-red" style="padding:6px 12px;font-size:11px;box-shadow:none"'
+        +' data-eid="'+ev.id+'" data-tab="'+curTab+'" onclick="openTabRate(this)">'
+        +(LOCAL.get(ev.id,curTab)?'Edit':'Rate')
+        +'</button></div>')
+      : '';
+    fightBlock='<div class="fight-list">'+fightRowsHtml(tab.fights,ev.id,evName,tOpen)+'</div>'+rateFooter;
+  }
 
   document.getElementById('detailContent').innerHTML=`
     <div class="ev-hcard a0">
@@ -1634,21 +1682,7 @@ function renderDetail(){
         <div class="sc-title">${tab.label}</div>
         ${(()=>{const a=getAgg(ev.id,curTab);return a&&a.cnt>0?`<span class="sc-badge ${SC(a.avg)}">${a.avg}/5 · ${a.cnt}</span>`:''})()}
       </div>
-      ${(()=>{
-        const ph=evPhase(ev);
-        const tOpen=tabIsOpen(ev,curTab);
-        // fights going on but this tab not open yet
-        if((ph==='live-early'&&curTab!=='early')||(ph==='live-prelims'&&curTab==='main')){
-          const tLeft=tabTimeLeft(ev,curTab);
-          return `<div style="padding:20px;text-align:center;color:var(--dim)">
-            <div style="font-size:22px;margin-bottom:8px">🥊</div>
-            <div style="font-weight:600;color:var(--text2);margin-bottom:4px">Fights going on — get ready to vote</div>
-            <div style="font-size:12px">${tab.label} voting opens in <span style="color:var(--red);font-family:'IBM Plex Mono',monospace;font-weight:700">${tLeft||'soon'}</span></div>
-          </div>`;
-        }
-        return `<div class="fight-list">${fightRowsHtml(tab.fights,ev.id,evName,tOpen)}</div>
-          ${tOpen?`<div class="sc-footer"><span>Rate ${tab.label} as a whole</span><button class="btn-red" style="padding:6px 12px;font-size:11px;box-shadow:none" onclick="openModal('${evName}','${tab.label}','${ev.id}','${curTab}',null,null)">${LOCAL.get(ev.id,curTab)?'Edit':'Rate'}</button></div>`:''}`;
-      })()}
+      ${fightBlock}
     </div>
   `;
 
@@ -1665,6 +1699,14 @@ function renderDetail(){
   }
 }
 function switchTab(t){curTab=t;renderDetail();}
+function openTabRate(btn){
+  const evId=btn.dataset.eid, tab=btn.dataset.tab;
+  const ev=EVENTS.find(e=>e.id===evId);
+  if(!ev)return;
+  const evName=ev.name+': '+ev.subtitle;
+  const tabLabel=ev.tabs[tab]?.label||tab;
+  openModal(evName,tabLabel,evId,tab,null,null);
+}
 
 // ═══════════════════════════════════════════════════
 // FIGHTER POPUP
