@@ -520,6 +520,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
       <div class="cu"><div class="cu-n" id="cd-s">--</div><div class="cu-l">sec</div></div>
     </div>
   </div>
+  <div style="padding:5px 0 8px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--red);display:none" id="votingOpensBadge"></div>
 </div>
 
 <!-- LIST VIEW -->
@@ -1002,27 +1003,27 @@ const UPCOMING=[
   {date:'Mar 14',day:14,year:2026,name:'UFC Fight Night',main:'Emmett vs. Vallejos',venue:'UFC Apex · Las Vegas',timeUTC:'2026-03-15T01:00:00Z',
    tabs:{
     main:{label:'Main Card',fights:[
-      {f1:'Josh Emmett',      f2:'Leandro Vallejos',    cls:'Featherweight',    title:''},
-      {f1:'Randy Brown',      f2:'Wellington Turman',   cls:'Welterweight',     title:''},
-      {f1:'TJ Brown',         f2:'Hunter Azure',        cls:'Featherweight',    title:''},
-      {f1:'Cody Durden',      f2:'Nate Maness',         cls:'Flyweight',        title:''},
+      {f1:'Josh Emmett',      f2:'Leandro Vallejos',    cls:'Featherweight',    title:'',hype:{hot:6,mid:2,skip:1}},
+      {f1:'Randy Brown',      f2:'Wellington Turman',   cls:'Welterweight',     title:'',hype:{hot:3,mid:4,skip:1}},
+      {f1:'TJ Brown',         f2:'Hunter Azure',        cls:'Featherweight',    title:'',hype:{hot:2,mid:3,skip:3}},
+      {f1:'Cody Durden',      f2:'Nate Maness',         cls:'Flyweight',        title:'',hype:{hot:4,mid:3,skip:1}},
     ]},
     prelims:{label:'Prelims',fights:[
-      {f1:'Tanner Boser',     f2:'Jhonata Diniz',       cls:'Heavyweight',      title:''},
-      {f1:'Tresean Gore',     f2:'Josh Fremd',          cls:'Middleweight',     title:''},
-      {f1:'Jessica Penne',    f2:'Luana Pinheiro',      cls:'Strawweight',      title:''},
+      {f1:'Tanner Boser',     f2:'Jhonata Diniz',       cls:'Heavyweight',      title:'',hype:{hot:5,mid:3,skip:1}},
+      {f1:'Tresean Gore',     f2:'Josh Fremd',          cls:'Middleweight',     title:'',hype:{hot:2,mid:4,skip:2}},
+      {f1:'Jessica Penne',    f2:'Luana Pinheiro',      cls:'Strawweight',      title:'',hype:{hot:3,mid:3,skip:2}},
     ]},
     early:{label:'Early Prelims',fights:[
-      {f1:'AJ Dobson',        f2:'Alen Amedovski',      cls:'Middleweight',     title:''},
-      {f1:'Marcelo Rojo',     f2:'Kyle Nelson',         cls:'Featherweight',    title:''},
+      {f1:'AJ Dobson',        f2:'Alen Amedovski',      cls:'Middleweight',     title:'',hype:{hot:1,mid:3,skip:4}},
+      {f1:'Marcelo Rojo',     f2:'Kyle Nelson',         cls:'Featherweight',    title:'',hype:{hot:2,mid:2,skip:4}},
     ]}
   }},
   {date:'Mar 21',day:21,year:2026,name:'UFC Fight Night',main:'Evloev vs. Murphy',venue:'O2 Arena · London',timeUTC:'2026-03-21T17:00:00Z',
    tabs:{
     main:{label:'Main Card',fights:[
-      {f1:'Movsar Evloev',    f2:'Lerone Murphy',       cls:'Featherweight',    title:''},
-      {f1:'Paddy Pimblett',   f2:'TBA',                 cls:'Lightweight',      title:''},
-      {f1:'Molly McCann',     f2:'TBA',                 cls:'Flyweight',        title:''},
+      {f1:'Movsar Evloev',    f2:'Lerone Murphy',       cls:'Featherweight',    title:'',hype:{hot:7,mid:1,skip:0}},
+      {f1:'Paddy Pimblett',   f2:'TBA',                 cls:'Lightweight',      title:'',hype:{hot:5,mid:2,skip:2}},
+      {f1:'Molly McCann',     f2:'TBA',                 cls:'Flyweight',        title:'',hype:{hot:4,mid:2,skip:1}},
     ]},
     prelims:{label:'Prelims',fights:[
       {f1:'Muhammad Mokaev',  f2:'TBA',                 cls:'Flyweight',        title:''},
@@ -1032,8 +1033,8 @@ const UPCOMING=[
   {date:'Mar 28',day:28,year:2026,name:'UFC Fight Night',main:'Adesanya vs. Pyfer',venue:'Climate Pledge · Seattle',timeUTC:'2026-03-29T02:00:00Z',
    tabs:{
     main:{label:'Main Card',fights:[
-      {f1:'Israel Adesanya',  f2:'Joe Pyfer',           cls:'Middleweight',     title:''},
-      {f1:'Kyler Phillips',   f2:'TBA',                 cls:'Bantamweight',     title:''},
+      {f1:'Israel Adesanya',  f2:'Joe Pyfer',           cls:'Middleweight',     title:'',hype:{hot:8,mid:1,skip:1}},
+      {f1:'Kyler Phillips',   f2:'TBA',                 cls:'Bantamweight',     title:'',hype:{hot:3,mid:3,skip:2}},
     ]},
     prelims:{label:'Prelims',fights:[
       {f1:'TBA',              f2:'TBA',                  cls:'TBA',             title:''},
@@ -1464,35 +1465,46 @@ function renderUpcomingDetail(){
         <span class="win-txt" style="color:var(--text2)"><b>🥊 Fights going on</b> — get ready to vote on results</span>
       </div>`:''}
     </div>
-
-    <div class="sc a1">
-      <div class="sc-head">
-        <div class="sc-title">Card Hype</div>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--dim)">${hasStarted?'event started':'rate each section'}</span>
-      </div>
-      <div style="padding:14px 17px;display:flex;flex-direction:column;gap:16px">
-        ${tabOrder.map(([k,l])=>hypeCardHtml(k,l)).join('')}
-      </div>
-    </div>
-
-    <div class="a2">
-      ${tabOrder.filter(([k])=>ev.tabs[k]?.fights.length>0).map(([k,l])=>`
-        <div class="sec-lbl" style="margin-top:10px">${l}</div>
-        ${ev.tabs[k].fights.map(f=>`<div class="sc" style="margin-bottom:4px;padding:10px 17px;display:flex;align-items:center;gap:8px;background:var(--s1);border:1px solid var(--border);border-radius:8px">
-          <div style="flex:1">
-            <div style="font-size:13px;font-weight:600">
-              <span class="fp-trigger" onclick="showFighterPopup(event,'${f.f1.replace(/'/g,"\\'")}','${f.cls}')">${f.f1}</span>
-              <span class="fvs">vs</span>
-              <span class="fp-trigger" onclick="showFighterPopup(event,'${f.f2.replace(/'/g,"\\'")}','${f.cls}')">${f.f2}</span>
-              ${f.title?`<span class="fight-title-b">${f.title}</span>`:''}
-            </div>
-            <div class="fight-cls">${f.cls}</div>
-          </div>
-        </div>`).join('')}
-      `).join('')}
+    <div class="a1">
+      ${tabOrder.filter(([k])=>ev.tabs[k]?.fights.filter(f=>f.f1&&f.f1!=='TBA').length>0).map(([k,l])=>{
+        const vote=getHypeVote(k);
+        const comm=hypeCounts(k);
+        const commTotal=comm?(comm.hot+comm.mid+comm.skip):0;
+        const pred=sectionPred(k);
+        const predColor=pred?hotColor(pred):'var(--muted)';
+        const sectionFights=ev.tabs[k].fights.filter(f=>f.f1&&f.f1!=='TBA');
+        const barsHtml=commTotal>0
+          ?'<div class="hype-bars" style="margin-top:10px">'
+            +[{k:'hot',icon:'🔥',col:'var(--red)'},{k:'mid',icon:'😐',col:'var(--text2)'},{k:'skip',icon:'💤',col:'var(--muted)'}].map(b=>{
+              const n=comm[b.k],pct=Math.round((n/commTotal)*100);
+              return '<div class="hype-bar-row"><span class="hype-bar-lbl">'+b.icon+'</span><div class="hype-bar-track"><div class="hype-bar-fill" style="width:'+pct+'%;background:'+b.col+'"></div></div><span class="hype-bar-pct">'+pct+'%</span></div>';
+            }).join('')
+            +'<div style="font-family:IBM Plex Mono,monospace;font-size:9px;color:var(--muted);margin-top:3px">'+commTotal+' vote'+(commTotal===1?'':'s')+'</div></div>'
+          :(!vote?'<div style="font-family:IBM Plex Mono,monospace;font-size:10px;color:var(--muted);margin-top:8px">Vote to see community hype</div>':'');
+        const btnsHtml=[{k:'hot',icon:'🔥',label:'Banger'},{k:'mid',icon:'😐',label:'Mid card'},{k:'skip',icon:'💤',label:'Skip it'}].map(b=>{
+          const isOn=vote===b.k;
+          const bg=isOn?(b.k==='hot'?'var(--red-glow)':'var(--s3)'):'var(--s2)';
+          const bc=isOn?(b.k==='hot'?'rgba(232,25,44,.5)':'var(--border2)'):'var(--border2)';
+          const col=isOn?(b.k==='hot'?'var(--red)':b.k==='mid'?'var(--text2)':'var(--muted)'):'var(--dim)';
+          return '<button onclick="castHype(\''+evId+'\',\''+k+'\',\''+b.k+'\')" style="flex:1;padding:8px 4px;border-radius:6px;cursor:pointer;font-family:IBM Plex Mono,monospace;font-size:10px;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:3px;background:'+bg+';border:1px solid '+bc+';color:'+col+'">'
+            +'<span style="font-size:16px">'+b.icon+'</span><span>'+b.label+'</span>'+(isOn?'<span style="font-size:8px;opacity:.6">your vote</span>':'')+'</button>';
+        }).join('');
+        return '<div class="sc" style="margin-bottom:10px">'
+          +'<div class="sc-head"><div class="sc-title">'+l+'</div>'+(pred?'<span style="font-family:IBM Plex Mono,monospace;font-size:11px;font-weight:700;color:'+predColor+'">'+pred+' '+hotEmoji(pred)+'</span>':'')+'</div>'
+          +'<div class="fight-list">'
+          +sectionFights.map(f=>{
+            const f1e=f.f1.replace(/'/g,"\'"),f2e=f.f2.replace(/'/g,"\'");
+            return '<div class="fight-row"><div class="fight-info"><div class="fight-name"><span class="fp-trigger" onclick="showFighterPopup(event,\''+f1e+'\',\''+f.cls+'\')">'+f.f1+'</span><span class="fvs">vs</span><span class="fp-trigger" onclick="showFighterPopup(event,\''+f2e+'\',\''+f.cls+'\')">'+f.f2+'</span>'+(f.title?'<span class="fight-title-b">'+f.title+'</span>':'')+'</div><div class="fight-cls">'+f.cls+'</div></div></div>';
+          }).join('')
+          +'</div>'
+          +(hasStarted?'<div style="padding:10px 17px;font-size:11px;color:var(--muted);font-family:IBM Plex Mono,monospace;border-top:1px solid var(--border)">Hype vote closed — event started</div>'
+            :'<div style="padding:10px 17px;border-top:1px solid var(--border)"><div style="font-family:IBM Plex Mono,monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">How hype for this card?</div><div style="display:flex;gap:6px;margin-bottom:4px">'+btnsHtml+'</div>'+barsHtml+'</div>')
+          +'</div>';
+      }).join('')}
     </div>
   `;
 }
+
 
 function castHype(evId, tabKey, val){
   const cur=localStorage.getItem('fv_hype_'+evId+'_'+tabKey);
@@ -1841,9 +1853,10 @@ async function renderFighters(){
     const rated=fights.filter(f=>{const a=getAgg(f.evId,f.fi);return a&&a.cnt>0;});
     if(!rated.length)return null;
     const avg=(rated.reduce((s,f)=>s+parseFloat(getAgg(f.evId,f.fi).avg),0)/rated.length).toFixed(1);
+    const totalVotes=rated.reduce((s,f)=>s+(getAgg(f.evId,f.fi)?.cnt||0),0);
     const clsList=[...new Set(fights.map(f=>f.wcKey).filter(Boolean))];
     const recentScores=rated.slice(-5).map(f=>({avg:getAgg(f.evId,f.fi).avg}));
-    return{name,rated:rated.length,avg,clsList,recentScores,fights};
+    return{name,rated:rated.length,avg,clsList,recentScores,fights,totalVotes};
   }).filter(Boolean).sort((a,b)=>parseFloat(b.avg)-parseFloat(a.avg));
   filterFighters();
 }
@@ -1856,7 +1869,7 @@ function filterFighters(){
         <div class="f-rank">#${i+1}</div>
         <div class="f-info">
           <div class="f-name">${f.name}</div>
-          <div class="f-meta">${f.clsList.join(' · ')} · ${f.rated} fight${f.rated===1?'':'s'} rated</div>
+          <div class="f-meta">${f.clsList.join(' · ')} · ${f.rated} fight${f.rated===1?'':'s'} · ${f.totalVotes} vote${f.totalVotes===1?'':'s'}</div>
           <div class="f-trend">${f.recentScores.map(s=>`<span class="f-dot ${SC(s.avg)}" title="${s.avg}"></span>`).join('')}</div>
         </div>
         <div class="f-sc ${SC(f.avg)}">${f.avg}<span style="font-size:9px;color:var(--muted)">/5</span></div>
@@ -1952,7 +1965,7 @@ function openFighter(name,fromView){
         <div>
           <div class="ev-hcard-org">Fighter Profile</div>
           <div class="ev-hcard-name" style="margin-bottom:4px">${name}</div>
-          <div style="font-size:12px;color:var(--dim)">${fData?.clsList?.join(' · ')||'Unknown division'} &nbsp;·&nbsp; ${fights.length} fight${fights.length===1?'':'s'} in database</div>
+          <div style="font-size:12px;color:var(--dim)">${fData?.clsList?.join(' · ')||'Unknown division'} &nbsp;·&nbsp; ${fights.length} fight${fights.length===1?'':'s'} in database &nbsp;·&nbsp; ${fData?.totalVotes||0} community vote${fData?.totalVotes===1?'':'s'}</div>
         </div>
         ${avg!==null?`<div style="text-align:right;flex-shrink:0">
           <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Excitement Rank</div>
