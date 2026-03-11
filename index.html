@@ -1055,7 +1055,6 @@ const WORD=n=>parseFloat(n)>=4.5?'Exceptional':parseFloat(n)>=4.0?'Great':parseF
 const fid=(f1,f2)=>(f1+'_vs_'+f2).replace(/[\s'.]/g,'_');
 const rKey=(f1,f2)=>(f1.split(' ').pop()+'_'+f2.split(' ').pop()).toLowerCase().replace(/[^a-z0-9_]/g,'');
 const rElId=(evId,f1,f2)=>('rl_'+evId+'_'+rKey(f1,f2)).replace(/[^a-zA-Z0-9_]/g,'');
-function winLeft(){const d=WIN_END-Date.now();if(d<=0)return null;return[Math.floor(d/3600000),Math.floor((d%3600000)/60000),Math.floor((d%60000)/1000)].map(n=>String(n).padStart(2,'0')).join(':');}
 function fmtET(u){try{return new Date(u).toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true,timeZone:'America/New_York'})+' ET';}catch{return '';}}
 function fmtLocal(u){try{return new Date(u).toLocaleString([],{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true,timeZoneName:'short'});}catch{return '';}}
 const userTZ=Intl.DateTimeFormat().resolvedOptions().timeZone;
