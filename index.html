@@ -712,7 +712,7 @@ function getAgg(evId,fId){return AGG[`${evId}|${fId}`]||null;}
 function getEventAvg(ev){
   // Compute overall avg from all individual fight ratings
   const allFights=Object.values(ev.tabs).flatMap(t=>t.fights);
-  const rated=allFights.map(f=>getAgg(ev.id,fid(f.f1,f.f2))).filter(a=>a&&a.cnt>0);
+  const rated=allFights.map(f=>getAgg(ev.id,f.id)).filter(a=>a&&a.cnt>0);
   if(!rated.length)return null;
   const avg=(rated.reduce((s,a)=>s+parseFloat(a.avg),0)/rated.length).toFixed(1);
   const cnt=Math.round(rated.reduce((s,a)=>s+a.cnt,0)/rated.length);
@@ -920,142 +920,7 @@ const WC_MAP={'Heavyweight':'HW','Light Heavyweight':'LHW','Middleweight':'MW','
 const WC_FULL={'All':'All Divisions','HW':'Heavyweight','LHW':'Light Heavyweight','MW':'Middleweight','WW':'Welterweight','LW':'Lightweight','FW':'Featherweight','BW':'Bantamweight','FLW':'Flyweight','W.BW':'W. Bantamweight','W.FLW':'W. Flyweight','W.SW':'W. Strawweight'};
 const WC_ORDER=['All','HW','LHW','MW','WW','LW','FW','BW','FLW','W.BW','W.FLW','W.SW'];
 
-const EVENTS=[
-  {id:'ufc326',name:'UFC 326',subtitle:'Holloway vs. Oliveira 2',
-   date:'Mar 7',day:7,year:2026,venue:'T-Mobile Arena · Las Vegas',
-   timeUTC:'2026-03-08T03:00:00Z',winOverride:'2026-04-30T23:59:00Z',
-   fotn:{f1:'Gregory Rodrigues',f2:'Brunno Ferreira',cls:'Middleweight',note:'Performance bonuses via Tapology'},
-   tabs:{
-    main:{label:'Main Card',fights:[
-      {f1:'Max Holloway',     f2:'Charles Oliveira',    cls:'Lightweight',      title:'BMF Title'},
-      {f1:'Caio Borralho',    f2:'Reinier de Ridder',   cls:'Middleweight',     title:''},
-      {f1:'Raul Rosas Jr.',   f2:'Rob Font',            cls:'Bantamweight',     title:''},
-      {f1:'Drew Dober',       f2:'Michael Johnson',     cls:'Lightweight',      title:''},
-      {f1:'Gregory Rodrigues',f2:'Brunno Ferreira',     cls:'Middleweight',     title:''},
-    ]},
-    prelims:{label:'Prelims',fights:[
-      {f1:'Cody Garbrandt',   f2:'Xiao Long',           cls:'Bantamweight',     title:''},
-      {f1:'Donte Johnson',    f2:'Cody Brundage',       cls:'Middleweight',     title:''},
-      {f1:'Alberto Montes',   f2:'Ricky Turcios',       cls:'Featherweight',    title:''},
-      {f1:'Nyamjargal Tumendemberel',f2:'Cody Durden',  cls:'Flyweight',        title:''},
-    ]},
-    early:{label:'Early Prelims',fights:[
-      {f1:'Rodolfo Bellato',  f2:'Luke Fernandez',      cls:'Light Heavyweight',title:''},
-      {f1:'Diyar Nurgozhay',  f2:'Rafael Tobias',       cls:'Welterweight',     title:''},
-      {f1:'Su Mudaerji',      f2:'Jesus Aguilar',       cls:'Flyweight',        title:''},
-    ]}
-  }},
-  {id:'ufcfn-moreno',name:'UFC Fight Night',subtitle:'Moreno vs. Kavanagh',
-   date:'Feb 28',day:28,year:2026,venue:'Foro Sol · Mexico City',
-   timeUTC:'2026-03-01T02:00:00Z',winOverride:'2026-04-30T23:59:00Z',
-   fotn:{f1:'Brandon Moreno',f2:"Lone'er Kavanagh",cls:'Flyweight',note:''},
-   tabs:{
-    main:{label:'Main Card',fights:[
-      {f1:"Lone'er Kavanagh",   f2:'Brandon Moreno',        cls:'Flyweight',        title:''},
-      {f1:'David Martínez',     f2:'Marlon Vera',            cls:'Bantamweight',     title:''},
-      {f1:'King Green',         f2:'Daniel Zellhuber',       cls:'Lightweight',      title:''},
-      {f1:'Édgar Cháirez',      f2:'Felipe Bunes',           cls:'Bantamweight',     title:''},
-      {f1:'Imanol Rodríguez',   f2:'Kevin Borjas',           cls:'Lightweight',      title:''},
-      {f1:'Santiago Luna',      f2:'Angel Pacheco',          cls:'Featherweight',    title:''},
-    ]},
-    prelims:{label:'Prelims',fights:[
-      {f1:'Ryan Gandra',        f2:'José Medina',            cls:'Featherweight',    title:''},
-      {f1:'Ailín Pérez',        f2:'Macy Chiasson',          cls:'W. Featherweight', title:''},
-      {f1:'Cristian Quiñónez',  f2:'Kris Moutinho',          cls:'Bantamweight',     title:''},
-      {f1:'Javier Reyes',       f2:'Douglas Silva de Andrade',cls:'Bantamweight',    title:''},
-    ]},
-    early:{label:'Early Prelims',fights:[
-      {f1:'Regina Tarin',       f2:'Ernesta Kareckaitė',     cls:'W. Strawweight',   title:''},
-      {f1:'Francis Marshall',   f2:'Erik Silva',             cls:'Featherweight',    title:''},
-      {f1:'Damian Pinas',       f2:'Wesley Schultz',         cls:'Lightweight',      title:''},
-    ]}
-  }},
-  {id:'ufc325',name:'UFC 325',subtitle:'Volkanovski vs. Lopes 2',
-   date:'Jan 31',day:31,year:2026,venue:'Qudos Bank Arena · Sydney',
-   timeUTC:'2026-02-01T10:00:00Z',winOverride:'2026-04-30T23:59:00Z',
-   fotn:{f1:'Alexander Volkanovski',f2:'Diego Lopes',cls:'Featherweight',note:''},
-   tabs:{
-    main:{label:'Main Card',fights:[
-      {f1:'Alexander Volkanovski',f2:'Diego Lopes',     cls:'Featherweight',    title:'FW Title'},
-      {f1:'Dan Hooker',       f2:'Dricus du Plessis',   cls:'Middleweight',     title:'MW Title'},
-      {f1:'Robert Whittaker', f2:'Ikram Aliskerov',     cls:'Middleweight',     title:''},
-    ]},
-    prelims:{label:'Prelims',fights:[
-      {f1:'Justin Tafa',      f2:'Justin Rodrigues',    cls:'Heavyweight',      title:''},
-      {f1:'Tyson Pedro',      f2:'Marcin Prachnio',     cls:'Light Heavyweight',title:''},
-    ]},
-    early:{label:'Early Prelims',fights:[
-      {f1:'Jamie Mullarkey',  f2:'Dean Barry',          cls:'Lightweight',      title:''},
-    ]}
-  }},
-  {id:'ufc324',name:'UFC 324',subtitle:'Gaethje vs. Pimblett',
-   date:'Jan 24',day:24,year:2026,venue:'T-Mobile Arena · Las Vegas',
-   timeUTC:'2026-01-25T03:00:00Z',winOverride:'2026-04-30T23:59:00Z',
-   fotn:{f1:'Justin Gaethje',f2:'Paddy Pimblett',cls:'Lightweight',note:''},
-   tabs:{
-    main:{label:'Main Card',fights:[
-      {f1:'Justin Gaethje',   f2:'Paddy Pimblett',      cls:'Lightweight',      title:''},
-      {f1:'Aljamain Sterling',f2:'Umar Nurmagomedov',   cls:'Bantamweight',     title:'BW Title'},
-      {f1:'Chris Weidman',    f2:'Brendan Allen',       cls:'Middleweight',     title:''},
-    ]},
-    prelims:{label:'Prelims',fights:[
-      {f1:'Song Yadong',      f2:'Merab Dvalishvili',   cls:'Bantamweight',     title:''},
-      {f1:'Bo Nickal',        f2:'Eryk Anders',         cls:'Middleweight',     title:''},
-    ]},
-    early:{label:'Early Prelims',fights:[
-      {f1:'Michael Morales',  f2:'Randy Brown',         cls:'Welterweight',     title:''},
-    ]}
-  }},
-];
-
-const UPCOMING=[
-  {date:'Mar 14',day:14,year:2026,name:'UFC Fight Night',main:'Emmett vs. Vallejos',venue:'UFC Apex · Las Vegas',timeUTC:'2026-03-15T01:00:00Z',
-   tabs:{
-    main:{label:'Main Card',fights:[
-      {f1:'Josh Emmett',      f2:'Leandro Vallejos',    cls:'Featherweight',    title:'',hype:{hot:6,mid:2,skip:1}},
-      {f1:'Randy Brown',      f2:'Wellington Turman',   cls:'Welterweight',     title:'',hype:{hot:3,mid:4,skip:1}},
-      {f1:'TJ Brown',         f2:'Hunter Azure',        cls:'Featherweight',    title:'',hype:{hot:2,mid:3,skip:3}},
-      {f1:'Cody Durden',      f2:'Nate Maness',         cls:'Flyweight',        title:'',hype:{hot:4,mid:3,skip:1}},
-    ]},
-    prelims:{label:'Prelims',fights:[
-      {f1:'Tanner Boser',     f2:'Jhonata Diniz',       cls:'Heavyweight',      title:'',hype:{hot:5,mid:3,skip:1}},
-      {f1:'Tresean Gore',     f2:'Josh Fremd',          cls:'Middleweight',     title:'',hype:{hot:2,mid:4,skip:2}},
-      {f1:'Jessica Penne',    f2:'Luana Pinheiro',      cls:'Strawweight',      title:'',hype:{hot:3,mid:3,skip:2}},
-    ]},
-    early:{label:'Early Prelims',fights:[
-      {f1:'AJ Dobson',        f2:'Alen Amedovski',      cls:'Middleweight',     title:'',hype:{hot:1,mid:3,skip:4}},
-      {f1:'Marcelo Rojo',     f2:'Kyle Nelson',         cls:'Featherweight',    title:'',hype:{hot:2,mid:2,skip:4}},
-    ]}
-  }},
-  {date:'Mar 21',day:21,year:2026,name:'UFC Fight Night',main:'Evloev vs. Murphy',venue:'O2 Arena · London',timeUTC:'2026-03-21T17:00:00Z',
-   tabs:{
-    main:{label:'Main Card',fights:[
-      {f1:'Movsar Evloev',    f2:'Lerone Murphy',       cls:'Featherweight',    title:'',hype:{hot:7,mid:1,skip:0}},
-      {f1:'Paddy Pimblett',   f2:'TBA',                 cls:'Lightweight',      title:'',hype:{hot:5,mid:2,skip:2}},
-      {f1:'Molly McCann',     f2:'TBA',                 cls:'Flyweight',        title:'',hype:{hot:4,mid:2,skip:1}},
-    ]},
-    prelims:{label:'Prelims',fights:[
-      {f1:'Muhammad Mokaev',  f2:'TBA',                 cls:'Flyweight',        title:''},
-    ]},
-    early:{label:'Early Prelims',fights:[]}
-  }},
-  {date:'Mar 28',day:28,year:2026,name:'UFC Fight Night',main:'Adesanya vs. Pyfer',venue:'Climate Pledge · Seattle',timeUTC:'2026-03-29T02:00:00Z',
-   tabs:{
-    main:{label:'Main Card',fights:[
-      {f1:'Israel Adesanya',  f2:'Joe Pyfer',           cls:'Middleweight',     title:'',hype:{hot:8,mid:1,skip:1}},
-      {f1:'Kyler Phillips',   f2:'TBA',                 cls:'Bantamweight',     title:'',hype:{hot:3,mid:3,skip:2}},
-    ]},
-    prelims:{label:'Prelims',fights:[
-      {f1:'TBA',              f2:'TBA',                  cls:'TBA',             title:''},
-    ]},
-    early:{label:'Early Prelims',fights:[]}
-  }},
-  {date:'Apr 4', day:4, year:2026,name:'UFC Fight Night',main:'Moicano vs. Duncan',venue:'TBA',timeUTC:'2026-04-05T01:00:00Z',tabs:{main:{label:'Main Card',fights:[{f1:'Renato Moicano',f2:'Erin Duncan',cls:'Lightweight',title:''}]},prelims:{label:'Prelims',fights:[]},early:{label:'Early Prelims',fights:[]}}},
-  {date:'Apr 11',day:11,year:2026,name:'UFC 327',       main:'Procházka vs. Ulberg',venue:'Kaseya Center · Miami',timeUTC:'2026-04-12T02:00:00Z',tabs:{main:{label:'Main Card',fights:[{f1:'Jiří Procházka',f2:'Carlos Ulberg',cls:'Light Heavyweight',title:'LHW Title'}]},prelims:{label:'Prelims',fights:[]},early:{label:'Early Prelims',fights:[]}}},
-  {date:'Apr 18',day:18,year:2026,name:'UFC Fight Night',main:'Burns vs. Malott',venue:'TBA',timeUTC:'2026-04-19T01:00:00Z',tabs:{main:{label:'Main Card',fights:[{f1:'Gilbert Burns',f2:'Carlos Malott',cls:'Welterweight',title:''}]},prelims:{label:'Prelims',fights:[]},early:{label:'Early Prelims',fights:[]}}},
-  {date:'Apr 25',day:25,year:2026,name:'UFC Fight Night',main:'Brady vs. Buckley',venue:'TBA',timeUTC:'2026-04-26T01:00:00Z',tabs:{main:{label:'Main Card',fights:[{f1:'Sean Brady',f2:'Jalin Turner',cls:'Welterweight',title:''}]},prelims:{label:'Prelims',fights:[]},early:{label:'Early Prelims',fights:[]}}},
-  {date:'May 2', day:2, year:2026,name:'UFC Fight Night',main:'Della Maddalena vs. Prates',venue:'RAC Arena · Perth',timeUTC:'2026-05-03T11:00:00Z',tabs:{main:{label:'Main Card',fights:[{f1:'Jack Della Maddalena',f2:'Carlos Prates',cls:'Welterweight',title:''}]},prelims:{label:'Prelims',fights:[]},early:{label:'Early Prelims',fights:[]}}},
-];
+// Event data loaded from events.js
 
 // ═══════════════════════════════════════════════════
 // UTILS

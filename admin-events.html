@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FightVibes · Event Admin</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0a0b0e;color:#e2e2e2;font-family:'IBM Plex Mono',monospace;font-size:13px}
+  h1{padding:16px 20px;color:#e8192c;font-size:16px;border-bottom:1px solid #1e2028;background:#07080a}
+  h2{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#888;margin-bottom:10px}
+  .tabs{display:flex;gap:0;border-bottom:1px solid #1e2028;background:#07080a;padding:0 16px}
+  .tab{padding:10px 16px;cursor:pointer;color:#666;font-size:11px;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid transparent}
+  .tab.on{color:#e8192c;border-bottom-color:#e8192c}
+  .pane{display:none;padding:16px}
+  .pane.on{display:block}
+  .ev-block{background:#111318;border:1px solid #1e2028;border-radius:8px;margin-bottom:16px;overflow:hidden}
+  .ev-head{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#0d0e14;cursor:pointer;user-select:none}
+  .ev-head:hover{background:#141620}
+  .ev-name{font-weight:700;color:#fff;font-size:13px}
+  .ev-date{color:#888;font-size:11px}
+  .ev-badge{font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700;letter-spacing:1px}
+  .ev-badge.past{background:rgba(232,25,44,.15);color:#e8192c}
+  .ev-badge.upcoming{background:rgba(34,197,94,.12);color:#22c55e}
+  .ev-body{padding:12px 16px;display:none}
+  .ev-body.open{display:block}
+  .section-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#555;margin:10px 0 4px}
+  .fight-row{display:grid;grid-template-columns:90px 1fr 16px 1fr 110px 60px;gap:6px;align-items:center;margin-bottom:5px;background:#0a0b0e;padding:6px 8px;border-radius:5px;border:1px solid #1a1b22}
+  .fight-row input{background:#07080a;border:1px solid #1e2028;border-radius:4px;color:#e2e2e2;font-family:inherit;font-size:12px;padding:4px 6px;width:100%}
+  .fight-row input:focus{outline:none;border-color:#e8192c}
+  .fight-id{color:#444;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .vs{color:#555;text-align:center}
+  .btn{padding:5px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:11px;border:none}
+  .btn-red{background:#e8192c;color:#fff}
+  .btn-red:hover{background:#c0141f}
+  .btn-dim{background:#1e2028;color:#888}
+  .btn-dim:hover{background:#2a2d3a;color:#ccc}
+  .btn-green{background:#166534;color:#22c55e}
+  .btn-green:hover{background:#14532d}
+  .add-fight{display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid #1a1b22}
+  .add-fight input{flex:1;background:#07080a;border:1px solid #1e2028;border-radius:4px;color:#e2e2e2;font-family:inherit;font-size:12px;padding:5px 8px}
+  .replaced{opacity:.4;text-decoration:line-through}
+  .rep-badge{font-size:9px;background:rgba(232,180,44,.15);color:#e8b800;padding:1px 5px;border-radius:3px;white-space:nowrap}
+  .output{background:#07080a;border:1px solid #1e2028;border-radius:6px;padding:12px;font-size:11px;line-height:1.6;color:#bbb;white-space:pre;overflow:auto;max-height:400px;margin-top:10px}
+  .copy-bar{display:flex;gap:8px;margin-top:10px;align-items:center}
+  .status{color:#22c55e;font-size:11px}
+  .warn{color:#e8b800;font-size:10px;margin-top:6px;padding:6px 10px;background:rgba(232,184,0,.08);border-radius:4px;border-left:2px solid #e8b800}
+  select{background:#07080a;border:1px solid #1e2028;border-radius:4px;color:#e2e2e2;font-family:inherit;font-size:12px;padding:4px 6px}
+  .ev-meta-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}
+  .ev-meta-row label{font-size:10px;color:#555;display:block;margin-bottom:2px}
+  .ev-meta-row input{width:100%;background:#07080a;border:1px solid #1e2028;border-radius:4px;color:#e2e2e2;font-family:inherit;font-size:12px;padding:5px 8px}
+  .flex{display:flex;gap:8px;align-items:center}
+  #toast{position:fixed;bottom:20px;right:20px;background:#22c55e;color:#000;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:700;opacity:0;transition:opacity .3s;pointer-events:none}
+</style>
+</head>
+<body>
+<h1>⚡ FightVibes · Event Admin</h1>
+<div class="tabs">
+  <div class="tab on" onclick="switchTab('past')">Past Events</div>
+  <div class="tab" onclick="switchTab('upcoming')">Upcoming Events</div>
+  <div class="tab" onclick="switchTab('export')">Export events.js</div>
+</div>
+
+<div id="pane-past" class="pane on"></div>
+<div id="pane-upcoming" class="pane"></div>
+<div id="pane-export" class="pane">
+  <h2>Export</h2>
+  <p style="color:#888;font-size:11px;margin-bottom:10px">Copy this into your <code style="color:#e8192c">events.js</code> file on GitHub.</p>
+  <div class="copy-bar">
+    <button class="btn btn-red" onclick="copyExport()">📋 Copy to Clipboard</button>
+    <span id="copyStatus" class="status"></span>
+  </div>
+  <div id="exportOut" class="output"></div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── Paste your events.js data inline here ──────────────────────
+// (Load both EVENTS and UPCOMING arrays)
+</script>
+<script src="events.js"></script>
+<script>
+// ── deep clone so we can mutate ─────────────────────────────────
+let pastData = JSON.parse(JSON.stringify(EVENTS));
+let upcomingData = JSON.parse(JSON.stringify(UPCOMING));
+
+const SECTIONS = [['main','Main Card'],['prelims','Prelims'],['early','Early Prelims']];
+const CLASSES = ['Flyweight','Bantamweight','Featherweight','Lightweight','Welterweight','Middleweight','Light Heavyweight','Heavyweight','W. Strawweight','W. Flyweight','W. Bantamweight','W. Featherweight'];
+
+function switchTab(t) {
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('on',['past','upcoming','export'][i]===t));
+  document.querySelectorAll('.pane').forEach(el=>el.classList.remove('on'));
+  document.getElementById('pane-'+t).classList.add('on');
+  if(t==='export') buildExport();
+}
+
+function toast(msg) {
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.style.opacity=1;
+  setTimeout(()=>el.style.opacity=0, 2000);
+}
+
+// ── PAST EVENTS ─────────────────────────────────────────────────
+function renderPast() {
+  const pane = document.getElementById('pane-past');
+  pane.innerHTML = pastData.map((ev,ei) => `
+    <div class="ev-block">
+      <div class="ev-head" onclick="toggleEv('past-${ei}')">
+        <span class="ev-name">${ev.name}: ${ev.subtitle}</span>
+        <span class="ev-date">${ev.date} ${ev.year} · ${ev.venue}</span>
+        <span class="ev-badge past">PAST</span>
+        <span style="margin-left:auto;color:#555;font-size:11px">▼</span>
+      </div>
+      <div class="ev-body" id="past-${ei}">
+        <div class="ev-meta-row">
+          <div><label>Event Name</label><input value="${ev.name}" onchange="pastData[${ei}].name=this.value"></div>
+          <div><label>Subtitle</label><input value="${ev.subtitle}" onchange="pastData[${ei}].subtitle=this.value"></div>
+          <div><label>Venue</label><input value="${ev.venue}" onchange="pastData[${ei}].venue=this.value"></div>
+        </div>
+        <div class="ev-meta-row">
+          <div><label>Date</label><input value="${ev.date}" onchange="pastData[${ei}].date=this.value"></div>
+          <div><label>Time UTC</label><input value="${ev.timeUTC}" onchange="pastData[${ei}].timeUTC=this.value"></div>
+          <div><label>Voting Open Until (winOverride)</label><input value="${ev.winOverride||''}" onchange="pastData[${ei}].winOverride=this.value"></div>
+        </div>
+        ${SECTIONS.map(([sk,sl])=>`
+          <div class="section-label">${sl}</div>
+          ${(ev.tabs[sk]?.fights||[]).map((f,fi)=>`
+            <div class="fight-row" id="past-${ei}-${sk}-${fi}">
+              <span class="fight-id" title="${f.id}">${f.id}</span>
+              <input value="${f.f1}" placeholder="Fighter 1"
+                onchange="pastData[${ei}].tabs['${sk}'].fights[${fi}].f1=this.value;markReplaced('past-${ei}-${sk}-${fi}',${fi},'${sk}',${ei},'past')">
+              <span class="vs">vs</span>
+              <input value="${f.f2}" placeholder="Fighter 2"
+                onchange="pastData[${ei}].tabs['${sk}'].fights[${fi}].f2=this.value">
+              <select onchange="pastData[${ei}].tabs['${sk}'].fights[${fi}].cls=this.value">
+                ${CLASSES.map(c=>`<option${c===f.cls?' selected':''}>${c}</option>`).join('')}
+              </select>
+              <input value="${f.title||''}" placeholder="title" onchange="pastData[${ei}].tabs['${sk}'].fights[${fi}].title=this.value">
+            </div>
+            ${f._replaced?`<div class="warn">⚠️ Fighter replaced — original: <b>${f._replaced}</b> — Supabase data stays on fight ID <code>${f.id}</code></div>`:''}
+          `).join('')}
+          <div class="add-fight">
+            <input id="past-${ei}-${sk}-af1" placeholder="Fighter 1">
+            <span class="vs">vs</span>
+            <input id="past-${ei}-${sk}-af2" placeholder="Fighter 2">
+            <select id="past-${ei}-${sk}-acls">${CLASSES.map(c=>`<option>${c}</option>`).join('')}</select>
+            <button class="btn btn-green" onclick="addFight('past',${ei},'${sk}')">+ Add</button>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── UPCOMING EVENTS ──────────────────────────────────────────────
+function renderUpcoming() {
+  const pane = document.getElementById('pane-upcoming');
+  pane.innerHTML = `
+    <div style="margin-bottom:12px;display:flex;gap:8px">
+      <button class="btn btn-red" onclick="addEvent()">+ New Event</button>
+    </div>
+  ` + upcomingData.map((ev,ei) => `
+    <div class="ev-block">
+      <div class="ev-head" onclick="toggleEv('upc-${ei}')">
+        <span class="ev-name">${ev.name}: ${ev.main}</span>
+        <span class="ev-date">${ev.date} ${ev.year} · ${ev.venue}</span>
+        <span class="ev-badge upcoming">UPCOMING</span>
+        <button class="btn btn-dim" style="margin-left:auto;font-size:10px" onclick="event.stopPropagation();moveToPast(${ei})">→ Move to Past</button>
+        <button class="btn btn-dim" style="font-size:10px" onclick="event.stopPropagation();deleteUpcoming(${ei})">✕</button>
+      </div>
+      <div class="ev-body" id="upc-${ei}">
+        <div class="ev-meta-row">
+          <div><label>Event Name</label><input value="${ev.name}" onchange="upcomingData[${ei}].name=this.value"></div>
+          <div><label>Main Event</label><input value="${ev.main}" onchange="upcomingData[${ei}].main=this.value"></div>
+          <div><label>Venue</label><input value="${ev.venue}" onchange="upcomingData[${ei}].venue=this.value"></div>
+        </div>
+        <div class="ev-meta-row">
+          <div><label>Date</label><input value="${ev.date}" onchange="upcomingData[${ei}].date=this.value"></div>
+          <div><label>Time UTC</label><input value="${ev.timeUTC}" onchange="upcomingData[${ei}].timeUTC=this.value"></div>
+          <div><label>ID</label><input value="${ev.id}" onchange="upcomingData[${ei}].id=this.value"></div>
+        </div>
+        ${SECTIONS.map(([sk,sl])=>`
+          <div class="section-label">${sl}</div>
+          ${(ev.tabs[sk]?.fights||[]).map((f,fi)=>`
+            <div class="fight-row">
+              <span class="fight-id" title="${f.id}">${f.id}</span>
+              <input value="${f.f1}" placeholder="Fighter 1"
+                onchange="upcomingData[${ei}].tabs['${sk}'].fights[${fi}].f1=this.value">
+              <span class="vs">vs</span>
+              <input value="${f.f2}" placeholder="Fighter 2"
+                onchange="upcomingData[${ei}].tabs['${sk}'].fights[${fi}].f2=this.value">
+              <select onchange="upcomingData[${ei}].tabs['${sk}'].fights[${fi}].cls=this.value">
+                ${CLASSES.map(c=>`<option${c===f.cls?' selected':''}>${c}</option>`).join('')}
+              </select>
+              <input value="${f.title||''}" placeholder="title" onchange="upcomingData[${ei}].tabs['${sk}'].fights[${fi}].title=this.value">
+            </div>
+          `).join('')}
+          <div class="add-fight">
+            <input id="upc-${ei}-${sk}-af1" placeholder="Fighter 1">
+            <span class="vs">vs</span>
+            <input id="upc-${ei}-${sk}-af2" placeholder="Fighter 2">
+            <select id="upc-${ei}-${sk}-acls">${CLASSES.map(c=>`<option>${c}</option>`).join('')}</select>
+            <button class="btn btn-green" onclick="addFight('upc',${ei},'${sk}')">+ Add</button>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleEv(id) {
+  const el=document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+function addFight(type, ei, sk) {
+  const data = type==='past'?pastData:upcomingData;
+  const ev = data[ei];
+  const f1 = document.getElementById(`${type}-${ei}-${sk}-af1`).value.trim();
+  const f2 = document.getElementById(`${type}-${ei}-${sk}-af2`).value.trim();
+  const cls = document.getElementById(`${type}-${ei}-${sk}-acls`).value;
+  if(!f1||!f2){toast('Enter both fighter names');return;}
+  const existing = ev.tabs[sk].fights;
+  const num = String(existing.length+1).padStart(2,'0');
+  const newId = `${ev.id}-${String(Object.values(ev.tabs).flatMap(t=>t.fights).length+1).padStart(2,'0')}`;
+  existing.push({id:newId,f1,f2,cls,title:''});
+  type==='past'?renderPast():renderUpcoming();
+  // re-open the section
+  setTimeout(()=>document.getElementById(`${type}-${ei}`)?.classList.add('open'),10);
+  toast(`Added: ${f1} vs ${f2}`);
+}
+
+function addEvent() {
+  const id = 'ufcfn-new-'+Date.now();
+  upcomingData.push({
+    id, name:'UFC Fight Night', main:'TBA vs. TBA',
+    date:'TBA', day:1, year:2026, venue:'TBA',
+    timeUTC:'2026-01-01T00:00:00Z',
+    tabs:{
+      main:{label:'Main Card',fights:[]},
+      prelims:{label:'Prelims',fights:[]},
+      early:{label:'Early Prelims',fights:[]}
+    }
+  });
+  renderUpcoming();
+  toast('New event added');
+}
+
+function deleteUpcoming(ei) {
+  if(!confirm('Delete this event?'))return;
+  upcomingData.splice(ei,1);
+  renderUpcoming();
+  toast('Deleted');
+}
+
+function moveToPast(ei) {
+  if(!confirm('Move this event to Past Events? Make sure to add a winOverride date.'))return;
+  const ev = upcomingData.splice(ei,1)[0];
+  ev.subtitle = ev.main;
+  ev.winOverride = '2026-04-30T23:59:00Z';
+  ev.fotn = {fightId: ev.id+'-01', note:''};
+  pastData.unshift(ev);
+  renderPast();
+  renderUpcoming();
+  toast('Moved to past — set winOverride in the event editor');
+}
+
+// ── REPLACEMENT TRACKING ──────────────────────────────────────────
+function markReplaced(rowId, fi, sk, ei, type) {
+  const data = type==='past'?pastData:upcomingData;
+  const fight = data[ei].tabs[sk].fights[fi];
+  if(!fight._replaced) {
+    // first edit = mark as replaced
+    // we already updated f1 above via onchange
+  }
+  // Show replacement warning
+  const warn = document.createElement('div');
+  warn.className = 'warn';
+  warn.innerHTML = `⚠️ Fighter name changed — Supabase fight data stays on <code>${fight.id}</code>`;
+  const row = document.getElementById(rowId);
+  if(row && !row.nextSibling?.classList?.contains('warn')) row.after(warn);
+}
+
+// ── EXPORT ────────────────────────────────────────────────────────
+function buildExport() {
+  const out = generateEventsJs();
+  document.getElementById('exportOut').textContent = out;
+}
+
+function generateEventsJs() {
+  const evStr = ev => {
+    const tabs = SECTIONS.map(([sk,sl])=>{
+      const fights = (ev.tabs[sk]?.fights||[]).map(f=>{
+        return `        { id: '${f.id}', f1: '${f.f1.replace(/'/g,"\\'")}', f2: '${f.f2.replace(/'/g,"\\'")}', cls: '${f.cls}', title: '${f.title||''}' }`;
+      }).join(',\n');
+      return `      ${sk}: { label: '${sl}', fights: [\n${fights}\n      ]}`;
+    }).join(',\n');
+    const isUpcoming = !ev.subtitle;
+    return `  {\n    id: '${ev.id}',\n    name: '${ev.name}',\n    ${isUpcoming?`main: '${ev.main}'`:`subtitle: '${ev.subtitle}'`},\n    date: '${ev.date}', day: ${ev.day||1}, year: ${ev.year},\n    venue: '${ev.venue}',\n    timeUTC: '${ev.timeUTC}',${ev.winOverride?`\n    winOverride: '${ev.winOverride}',`:''}\n    ${isUpcoming?'':`fotn: { fightId: '${ev.fotn?.fightId||''}', note: '${ev.fotn?.note||''}' },\n    `}tabs: {\n${tabs}\n    },\n  }`;
+  };
+  return `// FIGHTVIBES — events.js — auto-generated ${new Date().toISOString().slice(0,10)}\n\nconst EVENTS = [\n${pastData.map(evStr).join(',\n\n')}\n];\n\nconst UPCOMING = [\n${upcomingData.map(evStr).join(',\n\n')}\n];\n`;
+}
+
+function copyExport() {
+  navigator.clipboard.writeText(generateEventsJs()).then(()=>{
+    document.getElementById('copyStatus').textContent='✓ Copied!';
+    setTimeout(()=>document.getElementById('copyStatus').textContent='',2000);
+  });
+}
+
+renderPast();
+renderUpcoming();
+</script>
+</body>
+</html>
