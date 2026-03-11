@@ -1659,29 +1659,35 @@ function castHype(evId, tabKey, val){
 // FOTN
 // ═══════════════════════════════════════════════════
 function fotnHtml(ev){
-  if(!ev.fotn)return '';
-  const f=ev.fotn,fi=f.id;
+  if(!ev.fotn||!ev.fotn.fightId)return '';
+  // Look up the actual fight by stable ID
+  const allFights=Object.values(ev.tabs).flatMap(t=>t.fights);
+  const fight=allFights.find(f=>f.id===ev.fotn.fightId);
+  if(!fight)return '';
   const vk=`fv_fotn_${ev.id}`;
   let vote=null;try{const v=localStorage.getItem(vk);if(v)vote=JSON.parse(v);}catch(x){}
   const agreedPct=72;
+  const f1e=fight.f1.replace(/'/g,"\'"),f2e=fight.f2.replace(/'/g,"\'");
   return `<div class="fotn-card">
     <div class="fotn-head"><div class="fotn-lbl">⭐ Fight of the Night</div><span class="fotn-source">via Tapology</span></div>
     <div class="fotn-body">
       <div class="fotn-fight">
-        <span class="fp-trigger" onclick="showFighterPopup(event,'${f.f1.replace(/'/g,"\\'")}','${f.cls}')">${f.f1}</span>
+        <span class="fp-trigger" onclick="showFighterPopup(event,'${f1e}','${fight.cls}')">${fight.f1}</span>
         <span class="fotn-vs">vs</span>
-        <span class="fp-trigger" onclick="showFighterPopup(event,'${f.f2.replace(/'/g,"\\'")}','${f.cls}')">${f.f2}</span>
+        <span class="fp-trigger" onclick="showFighterPopup(event,'${f2e}','${fight.cls}')">${fight.f2}</span>
         ${vote?'<span class="fotn-badge">FOTN</span>':''}
       </div>
-      <div class="fotn-meta">${f.cls}${f.note?' · '+f.note:''}</div>
-      <div class="fotn-votes">
-        <button class="fotn-vbtn agree ${vote?.agree===true?'on':''}" onclick="voteFotn('${ev.id}',true)">👍 Agree${vote?' · '+agreedPct+'%':''}</button>
-        <button class="fotn-vbtn dis ${vote?.agree===false?'on':''}" onclick="voteFotn('${ev.id}',false)">👎 Disagree${vote?' · '+(100-agreedPct)+'%':''}</button>
-        ${!vote?'<span style="font-family:IBM Plex Mono,monospace;font-size:10px;color:var(--muted)">vote to see results</span>':''}
+      <div class="fotn-cls">${fight.cls}</div>
+      <div class="fotn-agree">
+        <span>Do you agree?</span>
+        <button onclick="voteFotn('${ev.id}',true)" class="${vote?.agree===true?'fotn-yes-on':'fotn-yes'}">👍 Yes</button>
+        <button onclick="voteFotn('${ev.id}',false)" class="${vote?.agree===false?'fotn-no-on':'fotn-no'}">👎 No</button>
+        <span class="fotn-pct">${agreedPct}% agree</span>
       </div>
     </div>
   </div>`;
 }
+
 function voteFotn(evId,agree){
   try{localStorage.setItem(`fv_fotn_${evId}`,JSON.stringify({agree}));}catch(x){}
   if(curEv&&curEv.id===evId)renderDetail();
