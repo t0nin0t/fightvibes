@@ -712,7 +712,7 @@ function getAgg(evId,fId){return AGG[`${evId}|${fId}`]||null;}
 function getEventAvg(ev){
   // Compute overall avg from all individual fight ratings
   const allFights=Object.values(ev.tabs).flatMap(t=>t.fights);
-  const rated=allFights.map(f=>getAgg(ev.id,f.id)).filter(a=>a&&a.cnt>0);
+  const rated=allFights.map(f=>getAgg(ev.id,dbFid(f))).filter(a=>a&&a.cnt>0);
   if(!rated.length)return null;
   const avg=(rated.reduce((s,a)=>s+parseFloat(a.avg),0)/rated.length).toFixed(1);
   const cnt=Math.round(rated.reduce((s,a)=>s+a.cnt,0)/rated.length);
@@ -1196,6 +1196,7 @@ const UPCOMING = [
 const SC=n=>parseFloat(n)>=4.5?'g':parseFloat(n)>=3.5?'ok':parseFloat(n)>=2.5?'avg':'bad';
 const WORD=n=>parseFloat(n)>=4.5?'Exceptional':parseFloat(n)>=4.0?'Great':parseFloat(n)>=3.5?'Good':parseFloat(n)>=3.0?'Average':parseFloat(n)>=2.0?'Below Avg':'Poor';
 const fid=(f1,f2)=>(f1+'_vs_'+f2).replace(/[\s'.]/g,'_');
+const dbFid=(f)=>f.dbId||fid(f.f1,f.f2);
 const rKey=(f1,f2)=>(f1.split(' ').pop()+'_'+f2.split(' ').pop()).toLowerCase().replace(/[^a-z0-9_]/g,'');
 const rElId=(evId,f1,f2)=>('rl_'+evId+'_'+rKey(f1,f2)).replace(/[^a-zA-Z0-9_]/g,'');
 function fmtET(u){try{return new Date(u).toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true,timeZone:'America/New_York'})+' ET';}catch{return '';}}
@@ -1379,7 +1380,7 @@ function renderHero(){
   // gather main card fights for quick view
   const mainFights=ev.tabs.main.fights.slice(0,5);
   const fightsHtml=mainFights.map(f=>{
-    const fi=f.id;
+    const fi=dbFid(f);
     const myR=LOCAL.get(ev.id,fi);
     const agg=getAgg(ev.id,fi);
     const evN=(ev.name+': '+ev.subtitle).replace(/'/g,"\'");
@@ -1479,7 +1480,7 @@ function getUserDMCounts(evId){
   const counts={mustwatch:0,neutral:0,boring:0};
   if(!curUpcEv)return counts;
   Object.values(curUpcEv.tabs).flatMap(t=>t.fights).filter(f=>f.f1&&f.f2&&f.f1!=='TBA').forEach(f=>{
-    const v=getDMVote(evId,f.id);if(v&&counts[v]!==undefined)counts[v]++;
+    const v=getDMVote(evId,dbFid(f));if(v&&counts[v]!==undefined)counts[v]++;
   });
   return counts;
 }
@@ -1700,7 +1701,7 @@ function voteFotn(evId,agree){
 function bangerSection(ev, tabKey){
   const fights = ev.tabs[tabKey]?.fights || [];
   const rated = fights.map(f => {
-    const a = getAgg(ev.id, f.id);
+    const a = getAgg(ev.id, dbFid(f));
     return a && a.cnt > 0 ? parseFloat(a.avg) : null;
   }).filter(v => v !== null);
   const total = rated.length;
@@ -1754,9 +1755,9 @@ function bangerMeter(ev){
 // FIGHT ROWS
 // ═══════════════════════════════════════════════════
 function fightRowsHtml(fights,evId,evName,tabOpen=true){
-  const fotnFight=curEv?.fotn?.fightId||null;
+  const fotnFight=curEv?.fotn?.fightId?(()=>{const af=Object.values(curEv.tabs).flatMap(t=>t.fights);const ff=af.find(f=>f.id===curEv.fotn.fightId);return ff?dbFid(ff):null;})():null;
   return fights.map(f=>{
-    const fi=f.id,eid=rElId(evId,f.f1,f.f2);
+    const fi=dbFid(f),eid=rElId(evId,f.f1,f.f2);
     const agg=getAgg(evId,fi),myR=LOCAL.get(evId,fi);
     const isFotn=fotnFight===fi;
     const evN=evName.replace(/'/g,"\\'");
@@ -1789,7 +1790,7 @@ function fightRowsHtml(fights,evId,evName,tabOpen=true){
 function top5Html(ev){
   const all=[];
   Object.entries(ev.tabs).forEach(([,tab])=>tab.fights.forEach(f=>{
-    const fi=f.id;const a=getAgg(ev.id,fi);
+    const fi=dbFid(f);const a=getAgg(ev.id,fi);
     if(a&&a.cnt>0)all.push({...f,fi,tabLabel:tab.label,agg:a});
   }));
   if(!all.length)return '';
@@ -1986,7 +1987,7 @@ function setWCFilter(wc){curWCFilter=wc;buildWCFilters();filterFighters();}
 function buildFighterIndex(){
   const idx={};
   EVENTS.forEach(ev=>Object.values(ev.tabs).forEach(tab=>tab.fights.forEach(f=>{
-    const fi=f.id;
+    const fi=dbFid(f);
     const entry={evId:ev.id,fi,f1:f.f1,f2:f.f2,cls:f.cls,title:f.title,wcKey:WC_MAP[f.cls]||'',evName:ev.name+': '+ev.subtitle,date:ev.date+' '+ev.year};
     [f.f1,f.f2].forEach(name=>{if(!idx[name])idx[name]=[];idx[name].push(entry);});
   })));
