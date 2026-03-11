@@ -80,7 +80,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 /* ── PAGES ── */
 .page{display:flex;justify-content:center;}
 .page-inner{width:100%;max-width:var(--max);padding:22px 18px;}
-.sec-lbl{font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--dim);margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.sec-lbl{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--red);margin-bottom:12px;display:flex;align-items:center;gap:10px;}
 .sec-lbl::after{content:'';flex:1;height:1px;background:var(--border);}
 .back-btn{display:inline-flex;align-items:center;gap:5px;color:var(--dim);font-family:'IBM Plex Mono',monospace;font-size:11px;cursor:pointer;background:none;border:none;padding:0;transition:color .15s;margin-bottom:18px;}
 .back-btn:hover{color:var(--text);}
@@ -433,6 +433,28 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .hero-fight-empty{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);}
 .hero-fight-sc{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;}
 .hero-fight-sc.g{color:var(--green)}.hero-fight-sc.ok{color:var(--gold)}.hero-fight-sc.avg{color:#e87419}.hero-fight-sc.bad{color:var(--red)}
+
+
+/* ── UPCOMING HYPE VOTE ── */
+.hype-section{margin-bottom:10px;}
+.hype-head{font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.hype-btns{display:flex;gap:6px;margin-bottom:8px;}
+.hype-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;background:var(--s2);border:1px solid var(--border2);border-radius:8px;cursor:pointer;transition:all .15s;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--dim);}
+.hype-btn:hover{border-color:var(--border2);background:var(--s3);}
+.hype-btn.hot.active{border-color:rgba(232,25,44,.5);background:var(--red-glow);color:var(--red);}
+.hype-btn.mid.active{border-color:rgba(100,100,120,.5);background:rgba(100,100,120,.1);color:var(--text2);}
+.hype-btn.skip.active{border-color:rgba(110,110,120,.4);background:rgba(80,80,90,.1);color:var(--muted);}
+.hype-btn .hb-icon{font-size:20px;line-height:1;}
+.hype-bars{display:flex;flex-direction:column;gap:4px;}
+.hype-bar-row{display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:10px;}
+.hype-bar-lbl{color:var(--dim);width:32px;text-align:right;}
+.hype-bar-track{flex:1;height:5px;background:var(--muted);border-radius:3px;overflow:hidden;}
+.hype-bar-fill{height:100%;border-radius:3px;transition:width .5s;}
+.hype-bar-pct{color:var(--dim);width:28px;}
+.pred-bar{margin-top:6px;}
+.pred-bar-lbl{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:4px;letter-spacing:1px;}
+.pred-bar-track{height:4px;background:var(--muted);border-radius:2px;overflow:hidden;margin-bottom:2px;}
+.pred-bar-fill{height:100%;border-radius:2px;transition:width .6s;}
 
 </style>
 </head>
@@ -1271,17 +1293,83 @@ function renderUpcomingDetail(){
   const ev=curUpcEv;
   const et=fmtET(ev.timeUTC),lt=fmtLocal(ev.timeUTC);
   const evId='upc_'+ev.date.replace(/ /g,'_').toLowerCase();
-  const allFights=Object.values(ev.tabs).flatMap(t=>t.fights).filter(f=>f.f1&&f.f2&&f.f1!=='TBA'&&f.f2!=='TBA');
+  const now=Date.now(), start=new Date(ev.timeUTC).getTime();
+  const hasStarted=now>=start;
 
-  // Sort by predicted excitement
-  const withPred=allFights.map(f=>{
-    const fi=fid(f.f1,f.f2);
-    const pred=predictedExcitement(f.f1,f.f2);
-    return{...f,fi,pred};
-  }).sort((a,b)=>{
-    const pa=a.pred?parseFloat(a.pred):2.5,pb=b.pred?parseFloat(b.pred):2.5;
-    return pb-pa;
-  });
+  // Hype vote helpers (localStorage)
+  function getHypeVote(tabKey){ try{return localStorage.getItem('fv_hype_'+evId+'_'+tabKey)||null;}catch{return null;} }
+  function setHypeVote(tabKey,val){ try{localStorage.setItem('fv_hype_'+evId+'_'+tabKey,val);}catch{} }
+  function clearHypeVote(tabKey){ try{localStorage.removeItem('fv_hype_'+evId+'_'+tabKey);}catch{} }
+
+  // Get community hype counts from Supabase AGG (stored as stars 5=🔥,3=😐,1=💤)
+  function hypeCounts(tabKey){
+    const a=getAgg(evId,'hype_'+tabKey);
+    if(!a||!a.dist)return null;
+    return { hot:a.dist[4]||0, mid:a.dist[2]||0, skip:a.dist[0]||0 };
+  }
+
+  // Predicted excitement for a section
+  function sectionPred(tabKey){
+    const tab=ev.tabs[tabKey];
+    if(!tab||!tab.fights.length)return null;
+    const scores=tab.fights.map(f=>{
+      const d1=allFighterData?.find(x=>x.name===f.f1), d2=allFighterData?.find(x=>x.name===f.f2);
+      const v1=d1?parseFloat(d1.avg):null, v2=d2?parseFloat(d2.avg):null;
+      if(v1&&v2)return(v1+v2)/2;
+      return v1||v2;
+    }).filter(x=>x!==null);
+    if(!scores.length)return null;
+    return (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1);
+  }
+
+  function hypeCardHtml(tabKey, tabLabel){
+    const tab=ev.tabs[tabKey];
+    if(!tab||!tab.fights.filter(f=>f.f1&&f.f1!=='TBA').length) return '';
+    const vote=getHypeVote(tabKey);
+    const comm=hypeCounts(tabKey);
+    const commTotal=comm?(comm.hot+comm.mid+comm.skip):0;
+    const pred=sectionPred(tabKey);
+    const predPct=pred?Math.round((parseFloat(pred)/5)*100):null;
+    const predColor=pred?hotColor(pred):'var(--muted)';
+
+    const btns=[
+      {key:'hot', icon:'🔥', label:'Banger', activeCls:'hot'},
+      {key:'mid', icon:'😐', label:'Mid card', activeCls:'mid'},
+      {key:'skip',icon:'💤', label:'Skip it',  activeCls:'skip'},
+    ];
+
+    const barsHtml=commTotal>0?`<div class="hype-bars">
+      ${[{k:'hot',icon:'🔥',col:'var(--red)'},{k:'mid',icon:'😐',col:'var(--text2)'},{k:'skip',icon:'💤',col:'var(--muted)'}].map(b=>{
+        const n=comm[b.k], pct=Math.round((n/commTotal)*100);
+        return `<div class="hype-bar-row">
+          <span class="hype-bar-lbl">${b.icon}</span>
+          <div class="hype-bar-track"><div class="hype-bar-fill" style="width:${pct}%;background:${b.col}"></div></div>
+          <span class="hype-bar-pct">${pct}%</span>
+        </div>`;
+      }).join('')}
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-top:3px">${commTotal} vote${commTotal===1?'':'s'}</div>
+    </div>`:(!vote?'<div style="font-size:11px;color:var(--muted);padding:4px 0">Vote to see community hype</div>':'');
+
+    return `<div class="hype-section">
+      <div class="hype-head">${tabLabel}</div>
+      ${pred?`<div class="pred-bar">
+        <div class="pred-bar-lbl">PREDICTED EXCITEMENT</div>
+        <div class="pred-bar-track"><div class="pred-bar-fill" style="width:${predPct}%;background:${predColor}"></div></div>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;color:${predColor}">${pred}</span>
+        <span style="font-size:10px;color:var(--dim);margin-left:4px">${hotEmoji(pred)}</span>
+      </div>`:''}
+      ${hasStarted?'<div style="font-size:11px;color:var(--muted);padding:6px 0">Hype vote closed — event started</div>':`<div class="hype-btns">
+        ${btns.map(b=>`<button class="hype-btn ${b.activeCls} ${vote===b.key?'active':''}" onclick="castHype('${evId}','${tabKey}','${b.key}')"  id="hb_${evId}_${tabKey}_${b.key}">
+          <span class="hb-icon">${b.icon}</span>
+          <span>${b.label}</span>
+          ${vote===b.key?'<span style="font-size:8px;opacity:.7">your vote</span>':''}
+        </button>`).join('')}
+      </div>`}
+      ${barsHtml}
+    </div>`;
+  }
+
+  const tabOrder=[['main','Main Card'],['prelims','Prelims'],['early','Early Prelims']];
 
   document.getElementById('upcomingDetailContent').innerHTML=`
     <div class="ev-hcard a0">
@@ -1297,55 +1385,26 @@ function renderUpcomingDetail(){
           </div>
         </div>
       </div>
+      ${hasStarted?`<div class="win-row" style="border-color:rgba(232,25,44,.3)">
+        <span class="win-dot"></span>
+        <span class="win-txt" style="color:var(--text2)"><b>🥊 Fights going on</b> — get ready to vote on results</span>
+      </div>`:''}
     </div>
 
-    ${withPred.length?`<div class="sc a1">
+    <div class="sc a1">
       <div class="sc-head">
-        <div class="sc-title">Hype Meter</div>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--dim)">🔥 max 5 &nbsp;·&nbsp; 😐 max 3 &nbsp;·&nbsp; 💤 max 2</span>
+        <div class="sc-title">Card Hype</div>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--dim)">${hasStarted?'event started':'rate each section'}</span>
       </div>
-      <div>${withPred.map((f,i)=>{
-        const userVote=getDMVote(evId,f.fi);
-        const comm=getCommunityHype(evId,f.fi);
-        const commTotal=comm.mustwatch+comm.neutral+comm.boring;
-        const predPct=f.pred?Math.round((parseFloat(f.pred)/5)*100):null;
-        const barColor=f.pred?hotColor(f.pred):'var(--muted)';
-        return `<div class="dontmiss-row">
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);width:18px;flex-shrink:0">#${i+1}</div>
-          <div class="dm-info" style="flex:1">
-            <div class="dm-name">
-              <span class="fp-trigger" onclick="showFighterPopup(event,'${f.f1.replace(/'/g,"\'")}','${f.cls}')">${f.f1}</span>
-              <span class="fvs">vs</span>
-              <span class="fp-trigger" onclick="showFighterPopup(event,'${f.f2.replace(/'/g,"\'")}','${f.cls}')">${f.f2}</span>
-              ${f.title?`<span class="fight-title-b">${f.title}</span>`:''}
-            </div>
-            <div class="dm-cls">${f.cls}</div>
-            ${f.pred?`<div class="dm-pred" style="margin-top:4px">
-              <span style="color:var(--muted);font-size:9px">Predicted hype</span>
-              <span class="dm-pred-bar"><span class="dm-pred-fill" style="width:${predPct}%;background:${barColor};display:block;height:100%;border-radius:2px"></span></span>
-              <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;color:${barColor}">${f.pred}</span>
-              <span>${hotEmoji(f.pred)}</span>
-            </div>`:''}
-            ${commTotal>0?`<div style="display:flex;gap:8px;margin-top:4px;font-family:'IBM Plex Mono',monospace;font-size:9px">
-              <span style="color:var(--red)">🔥 ${comm.mustwatch}</span>
-              <span style="color:var(--text2)">😐 ${comm.neutral}</span>
-              <span style="color:var(--dim)">💤 ${comm.boring}</span>
-            </div>`:''}
-          </div>
-          <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0">
-            ${['mustwatch','neutral','boring'].map(type=>{
-              const cfg=HYPE_CFG[type];const active=userVote===type;
-              return `<button style="background:${active?cfg.bg:'none'};border:1px solid ${active?cfg.border:'var(--border2)'};color:${active?cfg.color:'var(--dim)'};padding:3px 8px;font-family:'IBM Plex Mono',monospace;font-size:10px;border-radius:4px;cursor:pointer;transition:all .12s" onclick="event.stopPropagation();voteDM('${evId}','${f.fi}','${type}')">${cfg.icon} ${cfg.label}</button>`;
-            }).join('')}
-          </div>
-        </div>`;
-      }).join('')}</div>
-    </div>`:'<div class="sc a1"><div class="sc-empty">Full fight card TBA</div></div>'}
+      <div style="padding:14px 17px;display:flex;flex-direction:column;gap:16px">
+        ${tabOrder.map(([k,l])=>hypeCardHtml(k,l)).join('')}
+      </div>
+    </div>
 
     <div class="a2">
-      ${Object.entries(ev.tabs).filter(([,t])=>t.fights.length>0).map(([,t])=>`
-        <div class="sec-lbl" style="margin-top:10px">${t.label}</div>
-        ${t.fights.map(f=>`<div class="sc" style="margin-bottom:4px;padding:10px 17px;display:flex;align-items:center;gap:8px;background:var(--s1);border:1px solid var(--border);border-radius:8px">
+      ${tabOrder.filter(([k])=>ev.tabs[k]?.fights.length>0).map(([k,l])=>`
+        <div class="sec-lbl" style="margin-top:10px">${l}</div>
+        ${ev.tabs[k].fights.map(f=>`<div class="sc" style="margin-bottom:4px;padding:10px 17px;display:flex;align-items:center;gap:8px;background:var(--s1);border:1px solid var(--border);border-radius:8px">
           <div style="flex:1">
             <div style="font-size:13px;font-weight:600">
               <span class="fp-trigger" onclick="showFighterPopup(event,'${f.f1.replace(/'/g,"\\'")}','${f.cls}')">${f.f1}</span>
@@ -1360,6 +1419,14 @@ function renderUpcomingDetail(){
     </div>
   `;
 }
+
+function castHype(evId, tabKey, val){
+  const cur=localStorage.getItem('fv_hype_'+evId+'_'+tabKey);
+  if(cur===val){ localStorage.removeItem('fv_hype_'+evId+'_'+tabKey); }
+  else { localStorage.setItem('fv_hype_'+evId+'_'+tabKey,val); }
+  renderUpcomingDetail();
+}
+
 
 // ═══════════════════════════════════════════════════
 // FOTN
@@ -1453,7 +1520,7 @@ function bangerMeter(ev){
 // ═══════════════════════════════════════════════════
 // FIGHT ROWS
 // ═══════════════════════════════════════════════════
-function fightRowsHtml(fights,evId,evName){
+function fightRowsHtml(fights,evId,evName,tabOpen=true){
   const fotnFight=curEv?.fotn?fid(curEv.fotn.f1,curEv.fotn.f2):null;
   return fights.map(f=>{
     const fi=fid(f.f1,f.f2),eid=rElId(evId,f.f1,f.f2);
@@ -1479,7 +1546,9 @@ function fightRowsHtml(fights,evId,evName){
       <div class="reddit-wrap">
         <a class="reddit-link loading" id="${eid}" onclick="return false"></a>
       </div>
-      <button class="fight-rate-btn ${myR?'rated':''}" onclick="event.stopPropagation();openModal('${evN}','${f1e} vs ${f2e}','${evId}','${fi}','${f1e}','${f2e}')">${myR?'edit':'rate'}</button>
+      ${tabOpen
+        ? `<button class="fight-rate-btn ${myR?'rated':''}" onclick="event.stopPropagation();openModal('${evN}','${f1e} vs ${f2e}','${evId}','${fi}','${f1e}','${f2e}')">${myR?'edit':'rate'}</button>`
+        : `<span class="fight-rate-btn" style="color:var(--muted);cursor:default;border-color:transparent">closed</span>`}
     </div>`;
   }).join('');
 }
@@ -1528,7 +1597,7 @@ function renderDetail(){
     <div class="ev-hcard a0">
       <div class="ev-hcard-top">
         <div>
-          <div class="ev-hcard-org">UFC${ev.inWindow?' · <span style="color:var(--red)">● RATING OPEN</span>':''}</div>
+          <div class="ev-hcard-org">UFC${evInWindow(ev)?' · <span style="color:var(--red)">● RATING OPEN</span>':''}</div>
           <div class="ev-hcard-name">${evName}</div>
           <div class="ev-hcard-meta">
             <span>📅 ${ev.date}, ${ev.year}</span>
@@ -1543,11 +1612,16 @@ function renderDetail(){
           <div class="ev-big-cnt">${agg.cnt} rating${agg.cnt===1?'':'s'}${myOverall?` · <span style="color:var(--gold)">${'★'.repeat(myOverall.stars)}</span>`:''}</div>
         </div>`:''}
       </div>
-      ${inWin?`<div class="win-row">
-        <span class="win-dot"></span>
-        <span class="win-txt"><b>Rating window open</b> — closes in <span style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--red)" id="winTimer">${wl}</span></span>
-        <button class="btn-red" onclick="openModal('${evName}','Overall Card','${ev.id}','overall',null,null)">${myOverall?'Edit Rating':'Rate This Event'}</button>
-      </div>`:''}
+      ${(()=>{
+        const ph=evPhase(ev);
+        if(ph==='upcoming') return '';
+        if(ph==='closed') return '<div class="win-row" style="border-color:var(--border)"><span style="width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block;flex-shrink:0"></span><span class="win-txt" style="color:var(--dim)">Rating window closed</span></div>';
+        return `<div class="win-row">
+          <span class="win-dot"></span>
+          <span class="win-txt"><b>Rating window open</b> — closes in <span style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--red)" id="winTimer">${wl}</span></span>
+          <button class="btn-red" onclick="openModal('${evName}','Overall Card','${ev.id}','overall',null,null)">${myOverall?'Edit Rating':'Rate This Event'}</button>
+        </div>`;
+      })()}
     </div>
 
     ${fotnHtml(ev)}
@@ -1560,8 +1634,21 @@ function renderDetail(){
         <div class="sc-title">${tab.label}</div>
         ${(()=>{const a=getAgg(ev.id,curTab);return a&&a.cnt>0?`<span class="sc-badge ${SC(a.avg)}">${a.avg}/5 · ${a.cnt}</span>`:''})()}
       </div>
-      <div class="fight-list">${fightRowsHtml(tab.fights,ev.id,evName)}</div>
-      ${inWin?`<div class="sc-footer"><span>Rate ${tab.label} as a whole</span><button class="btn-red" style="padding:6px 12px;font-size:11px;box-shadow:none" onclick="openModal('${evName}','${tab.label}','${ev.id}','${curTab}',null,null)">${LOCAL.get(ev.id,curTab)?'Edit':'Rate'}</button></div>`:''}
+      ${(()=>{
+        const ph=evPhase(ev);
+        const tOpen=tabIsOpen(ev,curTab);
+        // fights going on but this tab not open yet
+        if((ph==='live-early'&&curTab!=='early')||(ph==='live-prelims'&&curTab==='main')){
+          const tLeft=tabTimeLeft(ev,curTab);
+          return `<div style="padding:20px;text-align:center;color:var(--dim)">
+            <div style="font-size:22px;margin-bottom:8px">🥊</div>
+            <div style="font-weight:600;color:var(--text2);margin-bottom:4px">Fights going on — get ready to vote</div>
+            <div style="font-size:12px">${tab.label} voting opens in <span style="color:var(--red);font-family:'IBM Plex Mono',monospace;font-weight:700">${tLeft||'soon'}</span></div>
+          </div>`;
+        }
+        return `<div class="fight-list">${fightRowsHtml(tab.fights,ev.id,evName,tOpen)}</div>
+          ${tOpen?`<div class="sc-footer"><span>Rate ${tab.label} as a whole</span><button class="btn-red" style="padding:6px 12px;font-size:11px;box-shadow:none" onclick="openModal('${evName}','${tab.label}','${ev.id}','${curTab}',null,null)">${LOCAL.get(ev.id,curTab)?'Edit':'Rate'}</button></div>`:''}`;
+      })()}
     </div>
   `;
 
@@ -1572,7 +1659,7 @@ function renderDetail(){
     fetchReddit(f.f1,f.f2,[eid]);
   }));
 
-  if(inWin){
+  if(evInWindow(ev)){
     if(window._wt)clearInterval(window._wt);
     window._wt=setInterval(()=>{const el=document.getElementById('winTimer');if(!el){clearInterval(window._wt);return;}const r=winLeft(ev);el.textContent=r||'Closed';if(!r)clearInterval(window._wt);},1000);
   }
