@@ -1838,14 +1838,7 @@ function renderDetail(){
     const tLeft=tabTimeLeft(ev,curTab);
     fightBlock='<div style="padding:20px;text-align:center;color:var(--dim)"><div style="font-size:22px;margin-bottom:8px">🥊</div><div style="font-weight:600;color:var(--text2);margin-bottom:4px">Fights going on — get ready to vote</div><div style="font-size:12px">'+tab.label+' voting opens in <span style="color:var(--red);font-family:IBM Plex Mono,monospace;font-weight:700">'+(tLeft||'soon')+'</span></div></div>';
   } else {
-    const rateFooter=tOpen
-      ? ('<div class="sc-footer"><span>Rate '+tab.label+' as a whole</span>'
-        +'<button class="btn-red" style="padding:6px 12px;font-size:11px;box-shadow:none"'
-        +' data-eid="'+ev.id+'" data-tab="'+curTab+'" onclick="openTabRate(this)">'
-        +(LOCAL.get(ev.id,curTab)?'Edit':'Rate')
-        +'</button></div>')
-      : '';
-    fightBlock='<div class="fight-list">'+fightRowsHtml(tab.fights,ev.id,evName,tOpen)+'</div>'+rateFooter;
+    fightBlock='<div class="fight-list">'+fightRowsHtml(tab.fights,ev.id,evName,tOpen)+'</div>';
   }
 
   document.getElementById('detailContent').innerHTML=`
