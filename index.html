@@ -1070,6 +1070,50 @@ function hotEmoji(avg){
   if(n>=4.5)return '🔥';if(n>=3.5)return '🌡️';if(n>=2.5)return '😐';return '❄️';
 }
 
+function evPhase(ev) {
+  if (!ev) return 'closed';
+  const now = Date.now();
+  const start = new Date(ev.timeUTC).getTime();
+  const end = evWinEnd(ev).getTime();
+  if (now < start) return 'upcoming';
+  if (now > end) return 'closed';
+  
+  // Estimate live phases (assuming 2 hours per section)
+  const elapsed = now - start;
+  if (elapsed < 2 * 3600000) return 'live-early';
+  if (elapsed < 4 * 3600000) return 'live-prelims';
+  return 'live-main';
+}
+
+function tabIsOpen(ev, tabKey) {
+  if (!evInWindow(ev)) return false;
+  const now = Date.now();
+  const start = new Date(ev.timeUTC).getTime();
+  
+  if (tabKey === 'early') return now >= start;
+  if (tabKey === 'prelims') return now >= start + 2 * 3600000;
+  if (tabKey === 'main') return now >= start + 4 * 3600000;
+  return true;
+}
+
+function tabTimeLeft(ev, tabKey) {
+  const now = Date.now();
+  const start = new Date(ev.timeUTC).getTime();
+  let targetTime = start;
+  
+  if (tabKey === 'prelims') targetTime += 2 * 3600000;
+  if (tabKey === 'main') targetTime += 4 * 3600000;
+  
+  const d = targetTime - now;
+  if (d <= 0) return null;
+  
+  return [
+    Math.floor(d / 3600000), 
+    Math.floor((d % 3600000) / 60000), 
+    Math.floor((d % 60000) / 1000)
+  ].map(n => String(n).padStart(2, '0')).join(':');
+}
+
 // ═══════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════
