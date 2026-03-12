@@ -920,6 +920,73 @@ function redditBtn(f1,f2){
 }
 
 // ═══════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════
+const WIN_H=36;
+function evWinEnd(ev){ const base=new Date(ev.timeUTC).getTime(); return new Date((ev.winOverride?new Date(ev.winOverride).getTime():base+WIN_H*3600*1000)); }
+function evInWindow(ev){ const now=Date.now(); const start=new Date(ev.timeUTC).getTime(); return now>=start && now<evWinEnd(ev).getTime(); }
+function winLeft(ev){ if(!ev)return null; const d=evWinEnd(ev)-Date.now(); if(d<=0)return null; return[Math.floor(d/3600000),Math.floor((d%3600000)/60000),Math.floor((d%60000)/1000)].map(n=>String(n).padStart(2,'0')).join(':'); }
+
+const SC=n=>parseFloat(n)>=4.5?'g':parseFloat(n)>=3.5?'ok':parseFloat(n)>=2.5?'avg':'bad';
+const WORD=n=>parseFloat(n)>=4.5?'Exceptional':parseFloat(n)>=4.0?'Great':parseFloat(n)>=3.5?'Good':parseFloat(n)>=3.0?'Average':parseFloat(n)>=2.0?'Below Avg':'Poor';
+const fid=(f1,f2)=>(f1+'_vs_'+f2).replace(/[\s'.]/g,'_');
+const dbFid=f=>f.dbId||fid(f.f1,f.f2);
+
+function fmtET(u){try{return new Date(u).toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true,timeZone:'America/New_York'})+' ET';}catch{return '';}}
+function fmtLocal(u){try{return new Date(u).toLocaleString([],{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true,timeZoneName:'short'});}catch{return '';}}
+const userTZ=Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+function hotColor(avg){const n=parseFloat(avg)||0;if(n>=4.5)return '#22c55e';if(n>=3.5)return '#e6b800';if(n>=2.5)return '#e87419';return '#e8192c';}
+function hotEmoji(avg){const n=parseFloat(avg)||0;if(n>=4.5)return '🔥';if(n>=3.5)return '🌡️';if(n>=2.5)return '😐';return '❄️';}
+
+function scoreCol(ev){
+  const a=getEventAvg(ev);
+  if(!a)return '<span style="font-family:IBM Plex Mono,monospace;font-size:10px;color:var(--muted)">no ratings</span>';
+  return `<span class="sc-badge ${SC(a.avg)}">${a.avg}</span>${a.isDemo?'<span style="font-family:IBM Plex Mono,monospace;font-size:8px;color:var(--dim);display:block;text-align:center">DEMO</span>':''}`;
+}
+
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+let recPage=0,upPage=0;
+const PER=5;
+let curEv=null,curUpcEv=null,curTab='main';
+let mStars=0,selF=[],mPF={},pendingEvId='',pendingFightId='',pendingF1='',pendingF2='';
+let popupFighter='',popupFromView='';
+let curWCFilter='All';
+let fighterIndex=null,allFighterData=[];
+
+// ═══════════════════════════════════════════════════
+// MENU
+// ═══════════════════════════════════════════════════
+function toggleMenu(){document.getElementById('menuDd').classList.toggle('hidden');}
+function closeMenu(){document.getElementById('menuDd').classList.add('hidden');}
+document.addEventListener('click',e=>{if(!e.target.closest('.menu-wrap'))closeMenu();});
+
+// ═══════════════════════════════════════════════════
+// COUNTDOWN
+// ═══════════════════════════════════════════════════
+const CD_T=UPCOMING.length?new Date(UPCOMING[0].timeUTC):new Date(Date.now()+86400000);
+function tick(){
+  const now=Date.now();
+  let d=Math.max(0,(CD_T-now)/1000);
+  const p=[Math.floor(d/86400),Math.floor((d%=86400,d/3600)),Math.floor((d%=3600,d/60)),Math.floor(d%60)];
+  ['cd-d','cd-h','cd-m','cd-s'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.textContent=String(p[i]).padStart(2,'0');});
+  const badge=document.getElementById('votingOpensBadge');
+  if(badge&&UPCOMING.length){
+    const nextEv=UPCOMING[0];
+    const evStart=new Date(nextEv.timeUTC).getTime();
+    const tillStart=evStart-now;
+    const votingEnd=evStart+WIN_H*3600000;
+    const votingOpen=now>=evStart&&now<votingEnd;
+    if(votingOpen){badge.style.display='block';badge.textContent='🗳 VOTING OPEN NOW';badge.style.color='var(--green)';}
+    else if(!now>=evStart&&tillStart<48*3600000){const s=Math.floor(tillStart/1000),dh=Math.floor(s/3600),dm=Math.floor((s%3600)/60),ds=s%60;badge.style.display='block';badge.style.color='var(--red)';badge.textContent='VOTING OPENS IN '+String(dh).padStart(2,'0')+'h '+String(dm).padStart(2,'0')+'m '+String(ds).padStart(2,'0')+'s';}
+    else badge.style.display='none';
+  }
+}
+tick();setInterval(tick,1000);
+
+// ═══════════════════════════════════════════════════
 // RENDER LIST
 // ═══════════════════════════════════════════════════
 function renderHero(){
