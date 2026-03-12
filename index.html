@@ -834,8 +834,16 @@ function renderUpcoming(){
   const total=Math.ceil(UPCOMING.length/PER),now=Date.now();
   document.getElementById('upcList').innerHTML=UPCOMING.slice(upPage*PER,(upPage+1)*PER).map((ev,relIdx)=>{
     const idx=upPage*PER+relIdx;
+    const evId='upc_'+ev.date.replace(/ /g,'_').toLowerCase();
     const diff=Math.ceil((new Date(ev.timeUTC)-now)/86400000);
     const et=fmtET(ev.timeUTC),lt=fmtLocal(ev.timeUTC);
+    const vote=getHypeMeter(evId);
+    const hasStarted=now>=new Date(ev.timeUTC).getTime();
+    const hypeSnippet=hasStarted
+      ?'<span style="font-family:IBM Plex Mono,monospace;font-size:9px;color:var(--muted)">hype vote closed</span>'
+      :vote!==null
+        ?`<span style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--dim)">your hype: <b style="color:var(--text2)">${vote}/10 🔥</b> · <span style="color:var(--red);text-decoration:underline;cursor:pointer">edit</span></span>`
+        :'<span style="font-family:IBM Plex Mono,monospace;font-size:9px;color:var(--muted)">rate the hype →</span>';
     return `<div class="upc-card" onclick="openUpcoming(${idx})">
       <div class="upc-date-col"><div class="upc-mo">${ev.date.split(' ')[0]}</div><div class="upc-day">${ev.day}</div></div>
       <div class="ev-divider" style="margin:0 2px"></div>
@@ -843,6 +851,7 @@ function renderUpcoming(){
         <div style="display:flex;align-items:center;gap:5px;margin-bottom:2px"><span class="org-tag">UFC</span><span class="upc-name">${ev.name}: ${ev.main}</span></div>
         <div class="upc-venue">${ev.venue}</div>
         <div class="upc-time">${et}${userTZ!=='America/New_York'&&lt?' · '+lt:''}</div>
+        <div style="margin-top:3px">${hypeSnippet}</div>
       </div>
       <div class="upc-right"><div class="upc-days">${Math.max(0,diff)}</div><div class="upc-days-l">days</div></div>
     </div>`;
@@ -889,77 +898,38 @@ function renderUpcomingDetail(){
   const hasStarted=now>=start;
 
   // Hype vote helpers (localStorage)
-  function getHypeVote(tabKey){ try{return localStorage.getItem('fv_hype_'+evId+'_'+tabKey)||null;}catch{return null;} }
-  function setHypeVote(tabKey,val){ try{localStorage.setItem('fv_hype_'+evId+'_'+tabKey,val);}catch{} }
-  function clearHypeVote(tabKey){ try{localStorage.removeItem('fv_hype_'+evId+'_'+tabKey);}catch{} }
 
-  // Get community hype counts from Supabase AGG (stored as stars 5=🔥,3=😐,1=💤)
-  function hypeCounts(tabKey){
-    const a=getAgg(evId,'hype_'+tabKey);
-    if(!a||!a.dist)return null;
-    return { hot:a.dist[4]||0, mid:a.dist[2]||0, skip:a.dist[0]||0 };
-  }
+  function hypeCardHtml(){
+    // Single hype meter per event (not per section)
+    if(hasStarted) return '';
+    const vote=getHypeMeter(evId);
+    const avg=hypeMeterAvg(evId);
+    const avgPct=Math.round((avg/10)*100);
+    const pips=Array.from({length:11},(_,i)=>i); // 0..10
+    const flameColor=v=>v<=3?'#555':v<=5?'#c06020':v<=7?'#e04a00':'var(--red)';
+    const voted=vote!==null;
 
-  // Predicted excitement for a section
-  function sectionPred(tabKey){
-    const tab=ev.tabs[tabKey];
-    if(!tab||!tab.fights.length)return null;
-    const scores=tab.fights.map(f=>{
-      const d1=allFighterData?.find(x=>x.name===f.f1), d2=allFighterData?.find(x=>x.name===f.f2);
-      const v1=d1?parseFloat(d1.avg):null, v2=d2?parseFloat(d2.avg):null;
-      if(v1&&v2)return(v1+v2)/2;
-      return v1||v2;
-    }).filter(x=>x!==null);
-    if(!scores.length)return null;
-    return (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1);
-  }
+    const pipsHtml=pips.map(i=>{
+      const filled=voted&&i<=vote;
+      return '<div class="flame-pip'+(filled?' filled':'')+' " data-v="'+i+'" onclick="castHypeMeter(\''+evId+'\','+i+')" title="'+i+'/10">'+(i===10?'🔥':i===0?'💤':String(i))+'</div>';
+    }).join('');
 
-  function hypeCardHtml(tabKey, tabLabel){
-    const tab=ev.tabs[tabKey];
-    if(!tab||!tab.fights.filter(f=>f.f1&&f.f1!=='TBA').length) return '';
-    const vote=getHypeVote(tabKey);
-    const comm=hypeCounts(tabKey);
-    const commTotal=comm?(comm.hot+comm.mid+comm.skip):0;
-    const pred=sectionPred(tabKey);
-    const predPct=pred?Math.round((parseFloat(pred)/5)*100):null;
-    const predColor=pred?hotColor(pred):'var(--muted)';
+    const resultHtml=voted?`<div class="hype-result">
+      <div class="hype-result-meta">Community avg: <b style="color:${flameColor(avg)}">${avg.toFixed(1)}/10</b></div>
+      <div class="hype-result-bar" style="width:${avgPct}%;background:linear-gradient(90deg,#555,${flameColor(avg)})"></div>
+      <div class="hype-your-vote">Your vote: <b style="color:${flameColor(vote)}">${vote}/10</b></div>
+    </div>`:
+    '<div class="hype-prompt">How hyped are you? 💤 0 — 10 🔥</div>';
 
-    const btns=[
-      {key:'hot', icon:'🔥', label:'Banger', activeCls:'hot'},
-      {key:'mid', icon:'😐', label:'Mid card', activeCls:'mid'},
-      {key:'skip',icon:'💤', label:'Skip it',  activeCls:'skip'},
-    ];
-
-    const barsHtml=commTotal>0?`<div class="hype-bars">
-      ${[{k:'hot',icon:'🔥',col:'var(--red)'},{k:'mid',icon:'😐',col:'var(--text2)'},{k:'skip',icon:'💤',col:'var(--muted)'}].map(b=>{
-        const n=comm[b.k], pct=Math.round((n/commTotal)*100);
-        return `<div class="hype-bar-row">
-          <span class="hype-bar-lbl">${b.icon}</span>
-          <div class="hype-bar-track"><div class="hype-bar-fill" style="width:${pct}%;background:${b.col}"></div></div>
-          <span class="hype-bar-pct">${pct}%</span>
-        </div>`;
-      }).join('')}
-      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-top:3px">${commTotal} vote${commTotal===1?'':'s'}</div>
-    </div>`:(!vote?'<div style="font-size:11px;color:var(--muted);padding:4px 0">Vote to see community hype</div>':'');
-
-    return `<div class="hype-section">
-      <div class="hype-head">${tabLabel}</div>
-      ${pred?`<div class="pred-bar">
-        <div class="pred-bar-lbl">PREDICTED EXCITEMENT</div>
-        <div class="pred-bar-track"><div class="pred-bar-fill" style="width:${predPct}%;background:${predColor}"></div></div>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;color:${predColor}">${pred}</span>
-        <span style="font-size:10px;color:var(--dim);margin-left:4px">${hotEmoji(pred)}</span>
-      </div>`:''}
-      ${hasStarted?'<div style="font-size:11px;color:var(--muted);padding:6px 0">Hype vote closed — event started</div>':`<div class="hype-btns">
-        ${btns.map(b=>`<button class="hype-btn ${b.activeCls} ${vote===b.key?'active':''}" onclick="castHype('${evId}','${tabKey}','${b.key}')"  id="hb_${evId}_${tabKey}_${b.key}">
-          <span class="hb-icon">${b.icon}</span>
-          <span>${b.label}</span>
-          ${vote===b.key?'<span style="font-size:8px;opacity:.7">your vote</span>':''}
-        </button>`).join('')}
-      </div>`}
-      ${barsHtml}
+    return `<div class="hype-card">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px">🔥 Hype Meter</div>
+      ${resultHtml}
+      <div class="flame-meter">${pipsHtml}</div>
+      <div class="hype-lbl-row"><span>💤 skip it</span><span>🔥 banger</span></div>
+      ${voted?'<div style="font-size:10px;color:var(--dim);margin-top:4px">tap to change your vote</div>':''}
     </div>`;
   }
+
 
   const tabOrder=[['main','Main Card'],['prelims','Prelims'],['early','Early Prelims']];
 
@@ -984,51 +954,22 @@ function renderUpcomingDetail(){
     </div>
     <div class="a1">
       ${tabOrder.filter(([k])=>ev.tabs[k]?.fights.filter(f=>f.f1&&f.f1!=='TBA').length>0).map(([k,l])=>{
-        const vote=getHypeVote(k);
-        const comm=hypeCounts(k);
-        const commTotal=comm?(comm.hot+comm.mid+comm.skip):0;
-        const pred=sectionPred(k);
-        const predColor=pred?hotColor(pred):'var(--muted)';
         const sectionFights=ev.tabs[k].fights.filter(f=>f.f1&&f.f1!=='TBA');
-        const barsHtml=commTotal>0
-          ?'<div class="hype-bars" style="margin-top:10px">'
-            +[{k:'hot',icon:'🔥',col:'var(--red)'},{k:'mid',icon:'😐',col:'var(--text2)'},{k:'skip',icon:'💤',col:'var(--muted)'}].map(b=>{
-              const n=comm[b.k],pct=Math.round((n/commTotal)*100);
-              return '<div class="hype-bar-row"><span class="hype-bar-lbl">'+b.icon+'</span><div class="hype-bar-track"><div class="hype-bar-fill" style="width:'+pct+'%;background:'+b.col+'"></div></div><span class="hype-bar-pct">'+pct+'%</span></div>';
-            }).join('')
-            +'<div style="font-family:IBM Plex Mono,monospace;font-size:9px;color:var(--muted);margin-top:3px">'+commTotal+' vote'+(commTotal===1?'':'s')+'</div></div>'
-          :(!vote?'<div style="font-family:IBM Plex Mono,monospace;font-size:10px;color:var(--muted);margin-top:8px">Vote to see community hype</div>':'');
-        const btnsHtml=[{k:'hot',icon:'🔥',label:'Banger'},{k:'mid',icon:'😐',label:'Mid card'},{k:'skip',icon:'💤',label:'Skip it'}].map(b=>{
-          const isOn=vote===b.k;
-          const bg=isOn?(b.k==='hot'?'var(--red-glow)':'var(--s3)'):'var(--s2)';
-          const bc=isOn?(b.k==='hot'?'rgba(232,25,44,.5)':'var(--border2)'):'var(--border2)';
-          const col=isOn?(b.k==='hot'?'var(--red)':b.k==='mid'?'var(--text2)':'var(--muted)'):'var(--dim)';
-          return '<button onclick="castHype(\''+evId+'\',\''+k+'\',\''+b.k+'\')" style="flex:1;padding:8px 4px;border-radius:6px;cursor:pointer;font-family:IBM Plex Mono,monospace;font-size:10px;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:3px;background:'+bg+';border:1px solid '+bc+';color:'+col+'">'
-            +'<span style="font-size:16px">'+b.icon+'</span><span>'+b.label+'</span>'+(isOn?'<span style="font-size:8px;opacity:.6">your vote</span>':'')+'</button>';
-        }).join('');
         return '<div class="sc" style="margin-bottom:10px">'
-          +'<div class="sc-head"><div class="sc-title">'+l+'</div>'+(pred?'<span style="font-family:IBM Plex Mono,monospace;font-size:11px;font-weight:700;color:'+predColor+'">'+pred+' '+hotEmoji(pred)+'</span>':'')+'</div>'
+          +'<div class="sc-head"><div class="sc-title">'+l+'</div></div>'
           +'<div class="fight-list">'
           +sectionFights.map(f=>{
             const f1e=f.f1.replace(/'/g,"\'"),f2e=f.f2.replace(/'/g,"\'");
             return '<div class="fight-row"><div class="fight-info"><div class="fight-name"><span class="fp-trigger" onclick="showFighterPopup(event,\''+f1e+'\',\''+f.cls+'\')">'+f.f1+'</span><span class="fvs">vs</span><span class="fp-trigger" onclick="showFighterPopup(event,\''+f2e+'\',\''+f.cls+'\')">'+f.f2+'</span>'+(f.title?'<span class="fight-title-b">'+f.title+'</span>':'')+'</div><div class="fight-cls">'+f.cls+'</div></div></div>';
           }).join('')
           +'</div>'
-          +(hasStarted?'<div style="padding:10px 17px;font-size:11px;color:var(--muted);font-family:IBM Plex Mono,monospace;border-top:1px solid var(--border)">Hype vote closed — event started</div>'
-            :'<div style="padding:10px 17px;border-top:1px solid var(--border)"><div style="font-family:IBM Plex Mono,monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">How hype for this card?</div><div style="display:flex;gap:6px;margin-bottom:4px">'+btnsHtml+'</div>'+barsHtml+'</div>')
           +'</div>';
       }).join('')}
+      ${hypeCardHtml()}
     </div>
   `;
 }
 
-
-function castHype(evId, tabKey, val){
-  const cur=localStorage.getItem('fv_hype_'+evId+'_'+tabKey);
-  if(cur===val){ localStorage.removeItem('fv_hype_'+evId+'_'+tabKey); }
-  else { localStorage.setItem('fv_hype_'+evId+'_'+tabKey,val); }
-  renderUpcomingDetail();
-}
 
 
 // ═══════════════════════════════════════════════════
