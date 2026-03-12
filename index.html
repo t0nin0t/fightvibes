@@ -108,6 +108,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .ev-sc-word{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-top:1px;}
 .ev-sc-word.g{color:var(--green)}.ev-sc-word.ok{color:var(--gold)}.ev-sc-word.avg{color:#e87419}.ev-sc-word.bad{color:var(--red)}
 .ev-sc-cnt{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--dim);margin-top:2px;}
+.demo-lbl{font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--dim);background:var(--s3);border:1px solid var(--border2);padding:1px 4px;border-radius:3px;letter-spacing:.05em;}
 .ev-sc-empty{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);padding-top:4px;}
 .ev-rate-btn{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--dim);background:none;border:none;cursor:pointer;padding:0;margin-top:3px;transition:color .15s;display:block;text-align:right;}
 .ev-rate-btn:hover{color:var(--red);}
@@ -172,12 +173,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .fotn-fight{font-size:14px;font-weight:600;margin-bottom:3px;}
 .fotn-vs{color:var(--red);font-family:'IBM Plex Mono',monospace;font-size:10px;margin:0 4px;}
 .fotn-meta{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--dim);margin-bottom:10px;}
-.fotn-votes{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.fotn-vbtn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;cursor:pointer;border:1px solid;transition:all .15s;}
-.fotn-vbtn.agree{color:var(--green);border-color:rgba(34,197,94,.3);background:var(--green-d);}
-.fotn-vbtn.agree.on,.fotn-vbtn.agree:hover{background:rgba(34,197,94,.2);border-color:var(--green);}
-.fotn-vbtn.dis{color:var(--dim);border-color:var(--border2);background:none;}
-.fotn-vbtn.dis.on,.fotn-vbtn.dis:hover{color:var(--text2);background:var(--s3);}
+
 
 /* ── HOT METER ── */
 .hot-wrap{padding:14px 17px;}
@@ -233,17 +229,10 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .fight-my{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--gold);flex-shrink:0;}
 
 /* ── REDDIT LINK + VERIFY ── */
-.reddit-wrap{position:relative;display:inline-flex;align-items:center;flex-shrink:0;}
-.reddit-link{display:inline-flex;align-items:center;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:3px 7px;border:1px solid var(--border2);border-radius:4px;text-decoration:none;transition:all .15s;white-space:nowrap;color:var(--dim);}
-.reddit-link.found{color:#ff6314;border-color:rgba(255,99,20,.3);background:rgba(255,99,20,.05);}
-.reddit-link.found:hover{border-color:#ff6314;}
-.reddit-link.verified{color:var(--green);border-color:rgba(34,197,94,.3);background:var(--green-d);}
-.reddit-link.loading{min-width:50px;cursor:default;}
-.reddit-link.loading::after{content:'';display:inline-block;width:20px;height:5px;border-radius:3px;background:linear-gradient(90deg,var(--muted) 0%,var(--border2) 50%,var(--muted) 100%);background-size:200% auto;animation:shimmer 1.4s linear infinite;margin-left:3px;vertical-align:middle;}
-.reddit-link.none{opacity:.2;cursor:default;}
-.reddit-verify{display:none;position:absolute;top:calc(100% + 5px);left:0;background:var(--s2);border:1px solid var(--border2);border-radius:7px;padding:8px 10px;white-space:nowrap;box-shadow:0 8px 20px rgba(0,0,0,.5);z-index:100;font-size:11px;color:var(--dim);animation:slideDown .15s ease;}
-.reddit-verify.show{display:block;}
-.reddit-verify-btns{display:flex;gap:5px;margin-top:6px;}
+.reddit-search{display:inline-flex;align-items:center;gap:4px;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:3px 8px;border:1px solid var(--border2);border-radius:4px;text-decoration:none;transition:all .15s;color:#ff6314;background:rgba(255,99,20,.05);border-color:rgba(255,99,20,.25);cursor:pointer;white-space:nowrap;}
+.reddit-search:hover{background:rgba(255,99,20,.12);border-color:#ff6314;}
+
+
 .rv-btn{background:none;border:1px solid var(--border2);color:var(--dim);padding:4px 10px;font-family:'IBM Plex Mono',monospace;font-size:10px;border-radius:4px;cursor:pointer;transition:all .12s;}
 .rv-btn.yes{color:var(--green);border-color:rgba(34,197,94,.3);}
 .rv-btn.yes:hover{background:var(--green-d);}
@@ -252,8 +241,8 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .rv-score{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-top:5px;}
 
 /* admin input */
-.admin-reddit{display:flex;gap:4px;margin-top:5px;}
-.admin-reddit input{background:var(--s3);border:1px solid var(--border2);color:var(--text);padding:4px 8px;border-radius:4px;font-size:11px;font-family:'Inter',sans-serif;outline:none;flex:1;min-width:200px;}
+
+
 .admin-lock-btn{background:var(--gold-d);border:1px solid rgba(230,184,0,.3);color:var(--gold);padding:4px 9px;font-family:'IBM Plex Mono',monospace;font-size:10px;border-radius:4px;cursor:pointer;white-space:nowrap;}
 
 .fight-rate-btn{background:none;border:1px solid var(--border2);color:var(--dim);padding:4px 9px;font-family:'IBM Plex Mono',monospace;font-size:10px;border-radius:5px;cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0;}
@@ -436,21 +425,28 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 
 
 /* ── UPCOMING HYPE VOTE ── */
-.hype-section{margin-bottom:10px;}
-.hype-head{font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
-.hype-btns{display:flex;gap:6px;margin-bottom:8px;}
-.hype-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;background:var(--s2);border:1px solid var(--border2);border-radius:8px;cursor:pointer;transition:all .15s;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--dim);}
-.hype-btn:hover{border-color:var(--border2);background:var(--s3);}
-.hype-btn.hot.active{border-color:rgba(232,25,44,.5);background:var(--red-glow);color:var(--red);}
-.hype-btn.mid.active{border-color:rgba(100,100,120,.5);background:rgba(100,100,120,.1);color:var(--text2);}
-.hype-btn.skip.active{border-color:rgba(110,110,120,.4);background:rgba(80,80,90,.1);color:var(--muted);}
-.hype-btn .hb-icon{font-size:20px;line-height:1;}
-.hype-bars{display:flex;flex-direction:column;gap:4px;}
-.hype-bar-row{display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:10px;}
-.hype-bar-lbl{color:var(--dim);width:32px;text-align:right;}
-.hype-bar-track{flex:1;height:5px;background:var(--muted);border-radius:3px;overflow:hidden;}
-.hype-bar-fill{height:100%;border-radius:3px;transition:width .5s;}
-.hype-bar-pct{color:var(--dim);width:28px;}
+.hype-card{background:var(--s2);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;margin-top:10px;}
+.hype-prompt{font-size:12px;color:var(--dim);margin-bottom:10px;}
+.flame-meter{display:flex;gap:4px;align-items:center;margin-bottom:8px;}
+.flame-pip{width:22px;height:32px;border-radius:5px;background:var(--s3);border:1px solid var(--border2);cursor:pointer;transition:all .12s;display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px;font-size:9px;position:relative;}
+.flame-pip:hover{border-color:var(--border2);transform:scaleY(1.08);}
+.flame-pip.filled{border-color:transparent;}
+.flame-pip.filled[data-v="0"]{background:#4a4a55;}
+.flame-pip.filled[data-v="1"]{background:#555566;}
+.flame-pip.filled[data-v="2"]{background:#5a5070;}
+.flame-pip.filled[data-v="3"]{background:#6a4f8f;}
+.flame-pip.filled[data-v="4"]{background:#7a5aa0;}
+.flame-pip.filled[data-v="5"]{background:#c06020;}
+.flame-pip.filled[data-v="6"]{background:#d05a10;}
+.flame-pip.filled[data-v="7"]{background:#e04a00;}
+.flame-pip.filled[data-v="8"]{background:#e83010;}
+.flame-pip.filled[data-v="9"]{background:#e82020;}
+.flame-pip.filled[data-v="10"]{background:var(--red);}
+.hype-lbl-row{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:4px;}
+.hype-result{margin-top:8px;}
+.hype-result-bar{height:8px;border-radius:4px;background:linear-gradient(90deg,#555,var(--red));transition:width .5s;margin:4px 0;}
+.hype-result-meta{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--dim);}
+.hype-your-vote{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);margin-top:4px;}
 .pred-bar{margin-top:6px;}
 .pred-bar-lbl{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:4px;letter-spacing:1px;}
 .pred-bar-track{height:4px;background:var(--muted);border-radius:2px;overflow:hidden;margin-bottom:2px;}
@@ -529,6 +525,11 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
     <div id="heroRating"></div>
     <div class="sec-lbl a0" id="recentLbl">Recent Events</div>
     <div class="ev-grid a1" id="recentList"></div>
+    <div class="pg-bar" id="recPgBar">
+      <button class="pg-btn" id="recPgPrev" onclick="recPrev()" disabled>‹</button>
+      <span class="pg-info" id="recPgInfo">1/1</span>
+      <button class="pg-btn" id="recPgNext" onclick="recNext()">›</button>
+    </div>
     <div class="sec-lbl a2">Upcoming</div>
     <div class="a3">
       <div class="upc-list" id="upcList"></div>
@@ -708,15 +709,26 @@ async function loadAgg(evId){
     });
   }catch(e){console.warn('loadAgg',e.message);}
 }
-function getAgg(evId,fId){return AGG[`${evId}|${fId}`]||null;}
+function getFightDemo(ev,fId){
+  if(!ev)return null;
+  const f=Object.values(ev.tabs).flatMap(t=>t.fights).find(f=>dbFid(f)===fId||f.id===fId);
+  return f&&f.demo?f.demo:null;
+}
+function getAgg(evId,fId,ev){
+  const real=AGG[`${evId}|${fId}`];
+  if(real&&real.cnt>0)return {...real,isDemo:false};
+  const demo=ev?getFightDemo(ev,fId):null;
+  if(demo)return {...demo,cnt:parseInt(demo.cnt),isDemo:true};
+  return null;
+}
 function getEventAvg(ev){
-  // Compute overall avg from all individual fight ratings
   const allFights=Object.values(ev.tabs).flatMap(t=>t.fights);
-  const rated=allFights.map(f=>getAgg(ev.id,dbFid(f))).filter(a=>a&&a.cnt>0);
-  if(!rated.length)return null;
-  const avg=(rated.reduce((s,a)=>s+parseFloat(a.avg),0)/rated.length).toFixed(1);
-  const cnt=Math.round(rated.reduce((s,a)=>s+a.cnt,0)/rated.length);
-  return {avg,cnt};
+  const aggs=allFights.map(f=>getAgg(ev.id,dbFid(f),ev)).filter(a=>a&&a.cnt>0);
+  if(!aggs.length)return null;
+  const avg=(aggs.reduce((s,a)=>s+parseFloat(a.avg),0)/aggs.length).toFixed(1);
+  const cnt=Math.round(aggs.reduce((s,a)=>s+a.cnt,0)/aggs.length);
+  const isDemo=aggs.every(a=>a.isDemo);
+  return {avg,cnt,isDemo};
 }
 
 async function checkDB(){
@@ -724,650 +736,13 @@ async function checkDB(){
   catch(e){document.getElementById('dbDot').style.background='#e8192c';document.getElementById('dbDot').title='DB error';}
 }
 
-// Reddit link store (Supabase table: reddit_links)
-const RL_LOCAL={
-  k:fid=>`fv_rl_${fid}`,
-  save(fid,d){try{localStorage.setItem(this.k(fid),JSON.stringify(d));}catch(x){}},
-  get(fid){try{const v=localStorage.getItem(this.k(fid));return v?JSON.parse(v):null;}catch(x){return null;}}
-};
-
-// ═══════════════════════════════════════════════════
-// REDDIT — improved multi-strategy search
-// ═══════════════════════════════════════════════════
-const RC={};// key → {url,altUrls,status:'loading'|'done'}
-
-async function searchReddit(f1,f2){
-  const n1=f1.split(' ').pop(),n2=f2.split(' ').pop();
-  const queries=[
-    `spoiler ${n1} ${n2}`,
-    `UFC ${n1} ${n2} fight`,
-    `${n1} vs ${n2}`,
-  ];
-  const allResults=[];
-  for(const q of queries){
-    try{
-      const res=await fetch(`https://www.reddit.com/r/MMA/search.json?q=${encodeURIComponent(q)}&restrict_sr=on&sort=new&t=month&limit=5`,{headers:{'Accept':'application/json'}});
-      if(!res.ok)continue;
-      const d=await res.json();
-      (d?.data?.children||[]).forEach(p=>{
-        const t=p.data.title.toLowerCase();
-        const score=(t.includes(n1.toLowerCase())?2:0)+(t.includes(n2.toLowerCase())?2:0)+(t.includes('spoiler')?1:0)+(t.includes('ufc')?1:0);
-        if(score>=3)allResults.push({url:'https://old.reddit.com'+p.data.permalink,score,title:p.data.title});
-      });
-    }catch(e){}
-  }
-  allResults.sort((a,b)=>b.score-a.score);
-  return allResults;
+function redditSearchUrl(f1,f2){
+  const q=[f1,f2,'flair:spoiler'].join(' ');
+  return 'https://old.reddit.com/r/MMA/search?q='+encodeURIComponent(q)+'&restrict_sr=on&sort=relevance&t=all';
 }
-
-async function fetchReddit(f1,f2,elIds){
-  const key=`${f1}|${f2}`;
-  if(RC[key]){
-    if(RC[key].status!=='loading'){elIds.forEach(id=>{const el=document.getElementById(id);if(el)applyReddit(el,RC[key],f1,f2);});}
-    else{const p=setInterval(()=>{if(RC[key].status==='loading')return;clearInterval(p);elIds.forEach(id=>{const el=document.getElementById(id);if(el)applyReddit(el,RC[key],f1,f2);});},300);}
-    return;
-  }
-
-  // Check local override / locked
-  const n1=f1.split(' ').pop(),n2=f2.split(' ').pop();
-  const fightKey=`${n1}_${n2}`.toLowerCase();
-  const saved=RL_LOCAL.get(fightKey);
-  if(saved?.locked){RC[key]={url:saved.url,altUrls:[],status:'done',locked:true,fightKey};elIds.forEach(id=>{const el=document.getElementById(id);if(el)applyReddit(el,RC[key],f1,f2);});return;}
-
-  RC[key]={url:null,altUrls:[],status:'loading',fightKey};
-  elIds.forEach(id=>{const el=document.getElementById(id);if(el){el.className='reddit-link loading';el.textContent='';}});
-
-  const results=await searchReddit(f1,f2);
-  RC[key].status='done';
-  RC[key].url=results[0]?.url||null;
-  RC[key].altUrls=results.slice(1).map(r=>r.url);
-  if(saved?.url&&!saved.locked)RC[key].url=saved.url;// respect user correction
-
-  elIds.forEach(id=>{const el=document.getElementById(id);if(el)applyReddit(el,RC[key],f1,f2);});
-}
-
-function applyReddit(el,rc,f1,f2){
-  const fightKey=rc.fightKey;
-  const saved=RL_LOCAL.get(fightKey)||{correct:0,wrong:0,locked:false};
-  if(!rc.url){el.className='reddit-link none';el.textContent='—';el.removeAttribute('href');return;}
-
-  const isVerified=saved.correct>=3||rc.locked;
-  el.className='reddit-link '+(isVerified?'verified':'found');
-  el.textContent=isVerified?'✓ r/':'r/';
-  el.href=rc.url;el.target='_blank';el.rel='noopener';
-  el.onclick=e=>{e.stopPropagation();showVerifyBox(el,fightKey,rc);};
-}
-
-function showVerifyBox(linkEl,fightKey,rc){
-  // close any open verify box first
-  document.querySelectorAll('.reddit-verify.show').forEach(el=>el.classList.remove('show'));
-  const wrap=linkEl.closest('.reddit-wrap');if(!wrap)return;
-  let vbox=wrap.querySelector('.reddit-verify');
-  if(!vbox){
-    vbox=document.createElement('div');vbox.className='reddit-verify';wrap.appendChild(vbox);
-  }
-  const saved=RL_LOCAL.get(fightKey)||{correct:0,wrong:0,locked:false,url:rc.url,votes:{}};
-  const alreadyVoted=saved.votes&&saved.votes[UID];
-  const isVerified=saved.correct>=3||rc.locked;
-
-  vbox.innerHTML=`
-    <div style="font-size:11px;color:var(--text2)">Was this the right thread?</div>
-    <div class="reddit-verify-btns">
-      ${alreadyVoted?`<span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--teal)">✓ you voted</span>`:
-        `<button class="rv-btn yes" onclick="voteReddit('${fightKey}',true,this)">👍 Yes</button>
-         <button class="rv-btn no" onclick="voteReddit('${fightKey}',false,this)">👎 No</button>`}
-    </div>
-    <div class="rv-score">${saved.correct} correct · ${saved.wrong} wrong${isVerified?' · ✓ verified':''}</div>
-    ${IS_ADMIN?`<div class="admin-reddit">
-      <input id="rl_${fightKey}" placeholder="Paste correct URL..." value="${saved.url||''}">
-      <button class="admin-lock-btn" onclick="adminLockReddit('${fightKey}')">🔒 Lock</button>
-    </div>`:''}
-  `;
-  vbox.classList.add('show');
-  // close on outside click
-  setTimeout(()=>{
-    const close=e=>{if(!wrap.contains(e.target)){vbox.classList.remove('show');document.removeEventListener('click',close);}};
-    document.addEventListener('click',close);
-  },50);
-}
-
-function voteReddit(fightKey,correct,btn){
-  const saved=RL_LOCAL.get(fightKey)||{correct:0,wrong:0,locked:false,url:null,votes:{}};
-  if(saved.votes&&saved.votes[UID])return;// already voted
-  if(!saved.votes)saved.votes={};
-  saved.votes[UID]=correct?'yes':'no';
-  if(correct){saved.correct=(saved.correct||0)+1;}
-  else{
-    saved.wrong=(saved.wrong||0)+1;
-    // if 3 wrong, try next alt URL
-    if(saved.wrong>=3){
-      const key=Object.keys(RC).find(k=>RC[k].fightKey===fightKey);
-      if(key&&RC[key].altUrls.length){saved.url=RC[key].altUrls.shift();RC[key].url=saved.url;}
-    }
-  }
-  RL_LOCAL.save(fightKey,saved);
-  btn.closest('.reddit-verify').querySelector('.rv-score').textContent=`${saved.correct} correct · ${saved.wrong} wrong${saved.correct>=3?' · ✓ verified':''}`;
-  btn.closest('.reddit-verify-btns').innerHTML=`<span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--teal)">✓ thanks!</span>`;
-  if(saved.correct>=3){// re-render link as verified
-    const el=btn.closest('.reddit-wrap')?.querySelector('.reddit-link');
-    if(el){el.className='reddit-link verified';el.textContent='✓ r/';}
-  }
-  // Async write to Supabase (best-effort)
-  SB.upsert('reddit_links',{fight_id:fightKey,url:saved.url,correct_votes:saved.correct,wrong_votes:saved.wrong,is_locked:false},'fight_id').catch(()=>{});
-}
-
-function adminLockReddit(fightKey){
-  const input=document.getElementById('rl_'+fightKey);if(!input)return;
-  const url=input.value.trim();if(!url)return;
-  const saved=RL_LOCAL.get(fightKey)||{correct:0,wrong:0,votes:{}};
-  saved.url=url;saved.locked=true;
-  RL_LOCAL.save(fightKey,saved);
-  const key=Object.keys(RC).find(k=>RC[k].fightKey===fightKey);
-  if(key){RC[key].url=url;RC[key].locked=true;}
-  SB.upsert('reddit_links',{fight_id:fightKey,url,correct_votes:saved.correct,wrong_votes:saved.wrong,is_locked:true},'fight_id').catch(()=>{});
-  showToast('🔒 Reddit link locked');
-  document.querySelectorAll('.reddit-verify.show').forEach(el=>el.classList.remove('show'));
-}
-
-// ═══════════════════════════════════════════════════
-// DATA
-// ═══════════════════════════════════════════════════
-const WIN_H = 30; // hours after event start that voting stays open
-function evWinEnd(ev){ if(ev.winOverride)return new Date(ev.winOverride); return new Date(new Date(ev.timeUTC).getTime() + WIN_H*3600*1000); }
-function evInWindow(ev){ const now=Date.now(); const start=new Date(ev.timeUTC).getTime(); return now>=start && now<evWinEnd(ev).getTime(); }
-function winLeft(ev){ if(!ev)return null; const d=evWinEnd(ev)-Date.now(); if(d<=0)return null; return[Math.floor(d/3600000),Math.floor((d%3600000)/60000),Math.floor((d%60000)/1000)].map(n=>String(n).padStart(2,'0')).join(':'); }
-
-const POS_F=[
-  {id:'action',  icon:'🔥',label:'Non-stop action'},
-  {id:'backforth',icon:'↔️',label:'Back and forth'},
-  {id:'crowd',   icon:'📣',label:'Crowd was electric'},
-  {id:'heart',   icon:'💛',label:'Heart on display'},
-  {id:'twist',   icon:'👀',label:'Unexpected turn'},
-  {id:'tech',    icon:'🎯',label:'Technically brilliant'},
-  {id:'grap',    icon:'🤼',label:'Grappling heavy'},
-  {id:'striking',icon:'👊',label:'Striking showcase'},
-  {id:'finish',  icon:'😮',label:'Emotional finish'},
-  {id:'classic', icon:'⭐',label:'Instant classic'},
-];
-const NEG_F=[
-  {id:'boring',  icon:'😴',label:'Boring fight'},
-  {id:'lay',     icon:'🛋️',label:'Lay and pray'},
-  {id:'clinch',  icon:'🤝',label:'Too much clinching'},
-  {id:'dec',     icon:'📋',label:'Forgettable decision'},
-  {id:'safe',    icon:'🐔',label:'No risk taken'},
-  {id:'slow',    icon:'🐢',label:'Slow pace'},
-  {id:'onesd',   icon:'⚖️',label:'One-sided non-finish'},
-  {id:'hype',    icon:'📢',label:'Overhyped matchup'},
-];
-const SKILLS=[
-  {id:'cardio',icon:'🫀',label:'Cardio'},
-  {id:'heart', icon:'❤️‍🔥',label:'Heart'},
-  {id:'power', icon:'💥',label:'Power'},
-  {id:'tech',  icon:'🎯',label:'Technique'},
-  {id:'chin',  icon:'🪨',label:'Chin'},
-  {id:'speed', icon:'⚡',label:'Speed'},
-];
-const ENTRANCE_OPTS=[{id:'fire',icon:'🔥',label:'Fire'},{id:'mid',icon:'😐',label:'Mid'},{id:'boring',icon:'💤',label:'Boring'}];
-const EXIT_OPTS=[{id:'class',icon:'🏆',label:'Classy'},{id:'graceful',icon:'😌',label:'Graceful'},{id:'salty',icon:'😤',label:'Salty'}];
-const STAR_LABELS=['','😬 Terrible','😒 Poor','😐 Average','😊 Good','🔥 Elite'];
-const WATCH_OPTS=[
-  {id:'full',   icon:'📺',label:'Full Card',    desc:'Watch every fight start to finish'},
-  {id:'top3',   icon:'🎯',label:'3 Fights Max', desc:'Skip to the highest-rated fights'},
-  {id:'hilight',icon:'⚡',label:'Highlights',   desc:'Best moments only, ~10 min'},
-  {id:'results',icon:'📊',label:'Results Only', desc:'Just check the scores and move on'},
-];
-const WC_MAP={'Heavyweight':'HW','Light Heavyweight':'LHW','Middleweight':'MW','Welterweight':'WW','Lightweight':'LW','Featherweight':'FW','Bantamweight':'BW','Flyweight':'FLW','W. Bantamweight':'W.BW','W. Flyweight':'W.FLW','W. Strawweight':'W.SW','W. Featherweight':'W.FW','Strawweight':'W.SW'};
-const WC_FULL={'All':'All Divisions','HW':'Heavyweight','LHW':'Light Heavyweight','MW':'Middleweight','WW':'Welterweight','LW':'Lightweight','FW':'Featherweight','BW':'Bantamweight','FLW':'Flyweight','W.BW':'W. Bantamweight','W.FLW':'W. Flyweight','W.SW':'W. Strawweight'};
-const WC_ORDER=['All','HW','LHW','MW','WW','LW','FW','BW','FLW','W.BW','W.FLW','W.SW'];
-
-const EVENTS = [
-
-  // ─────────────────────────────────────────────────────────────
-  // UFC 326 · Mar 7, 2026 · Las Vegas
-  // ─────────────────────────────────────────────────────────────
-  {
-    id: 'ufc326',
-    name: 'UFC 326',
-    subtitle: 'Holloway vs. Oliveira 2',
-    date: 'Mar 7', day: 7, year: 2026,
-    venue: 'T-Mobile Arena · Las Vegas',
-    timeUTC: '2026-03-08T03:00:00Z',
-    winOverride: '2026-04-30T23:59:00Z',
-    fotn: { fightId: 'ufc326-09', note: 'Performance bonuses via Tapology' },
-    tabs: {
-      main: { label: 'Main Card', fights: [
-        { id: 'ufc326-01', f1: 'Max Holloway',      f2: 'Charles Oliveira',   cls: 'Lightweight',       title: 'BMF Title' },
-        { id: 'ufc326-02', f1: 'Caio Borralho',     f2: 'Reinier de Ridder',  cls: 'Middleweight',      title: '' },
-        { id: 'ufc326-03', f1: 'Raul Rosas Jr.',    f2: 'Rob Font',           cls: 'Bantamweight',      title: '' },
-        { id: 'ufc326-04', f1: 'Drew Dober',        f2: 'Michael Johnson',    cls: 'Lightweight',       title: '' },
-        { id: 'ufc326-05', f1: 'Gregory Rodrigues', f2: 'Brunno Ferreira',    cls: 'Middleweight',      title: '' },
-      ]},
-      prelims: { label: 'Prelims', fights: [
-        { id: 'ufc326-06', f1: 'Cody Garbrandt',    f2: 'Xiao Long',          cls: 'Bantamweight',      title: '' },
-        { id: 'ufc326-07', f1: 'Donte Johnson',     f2: 'Cody Brundage',      cls: 'Middleweight',      title: '' },
-        { id: 'ufc326-08', f1: 'Alberto Montes',    f2: 'Ricky Turcios',      cls: 'Featherweight',     title: '' },
-        { id: 'ufc326-09', f1: 'Nyamjargal Tumendemberel', f2: 'Cody Durden', cls: 'Flyweight',         title: '' },
-      ]},
-      early: { label: 'Early Prelims', fights: [
-        { id: 'ufc326-10', f1: 'Rodolfo Bellato',   f2: 'Luke Fernandez',     cls: 'Light Heavyweight', title: '' },
-        { id: 'ufc326-11', f1: 'Diyar Nurgozhay',   f2: 'Rafael Tobias',      cls: 'Welterweight',      title: '' },
-        { id: 'ufc326-12', f1: 'Su Mudaerji',       f2: 'Jesus Aguilar',      cls: 'Flyweight',         title: '' },
-      ]},
-    },
-  },
-
-  // ─────────────────────────────────────────────────────────────
-  // UFC Fight Night · Feb 28, 2026 · Mexico City
-  // ─────────────────────────────────────────────────────────────
-  {
-    id: 'ufcfn-moreno',
-    name: 'UFC Fight Night',
-    subtitle: 'Moreno vs. Kavanagh',
-    date: 'Feb 28', day: 28, year: 2026,
-    venue: 'Foro Sol · Mexico City',
-    timeUTC: '2026-03-01T02:00:00Z',
-    winOverride: '2026-04-30T23:59:00Z',
-    fotn: { fightId: 'ufcfn-moreno-01', note: '' },
-    tabs: {
-      main: { label: 'Main Card', fights: [
-        { id: 'ufcfn-moreno-01', f1: "Lone'er Kavanagh",  f2: 'Brandon Moreno',             cls: 'Flyweight',       title: '' },
-        { id: 'ufcfn-moreno-02', f1: 'David Martínez',    f2: 'Marlon Vera',                cls: 'Bantamweight',    title: '' },
-        { id: 'ufcfn-moreno-03', f1: 'King Green',        f2: 'Daniel Zellhuber',           cls: 'Lightweight',     title: '' },
-        { id: 'ufcfn-moreno-04', f1: 'Édgar Cháirez',    f2: 'Felipe Bunes',               cls: 'Bantamweight',    title: '' },
-        { id: 'ufcfn-moreno-05', f1: 'Imanol Rodríguez', f2: 'Kevin Borjas',               cls: 'Lightweight',     title: '' },
-        { id: 'ufcfn-moreno-06', f1: 'Santiago Luna',     f2: 'Angel Pacheco',              cls: 'Featherweight',   title: '' },
-      ]},
-      prelims: { label: 'Prelims', fights: [
-        { id: 'ufcfn-moreno-07', f1: 'Ryan Gandra',       f2: 'José Medina',               cls: 'Featherweight',   title: '' },
-        { id: 'ufcfn-moreno-08', f1: 'Ailín Pérez',      f2: 'Macy Chiasson',              cls: 'W. Featherweight',title: '' },
-        { id: 'ufcfn-moreno-09', f1: 'Cristian Quiñónez',f2: 'Kris Moutinho',             cls: 'Bantamweight',    title: '' },
-        { id: 'ufcfn-moreno-10', f1: 'Javier Reyes',      f2: 'Douglas Silva de Andrade',  cls: 'Bantamweight',    title: '' },
-      ]},
-      early: { label: 'Early Prelims', fights: [
-        { id: 'ufcfn-moreno-11', f1: 'Regina Tarin',      f2: 'Ernesta Kareckaitė',        cls: 'W. Strawweight',  title: '' },
-        { id: 'ufcfn-moreno-12', f1: 'Francis Marshall',  f2: 'Erik Silva',                cls: 'Featherweight',   title: '' },
-        { id: 'ufcfn-moreno-13', f1: 'Damian Pinas',      f2: 'Wesley Schultz',            cls: 'Lightweight',     title: '' },
-      ]},
-    },
-  },
-
-  // ─────────────────────────────────────────────────────────────
-  // UFC 325 · Jan 31, 2026 · Sydney
-  // NOTE: Verify this card — data may be incomplete
-  // ─────────────────────────────────────────────────────────────
-  {
-    id: 'ufc325',
-    name: 'UFC 325',
-    subtitle: 'Volkanovski vs. Lopes 2',
-    date: 'Jan 31', day: 31, year: 2026,
-    venue: 'Qudos Bank Arena · Sydney',
-    timeUTC: '2026-02-01T10:00:00Z',
-    winOverride: '2026-04-30T23:59:00Z',
-    fotn: { fightId: 'ufc325-01', note: '' },
-    tabs: {
-      main: { label: 'Main Card', fights: [
-        { id: 'ufc325-01', f1: 'Alexander Volkanovski', f2: 'Diego Lopes',      cls: 'Featherweight',     title: 'FW Title' },
-        { id: 'ufc325-02', f1: 'Dan Hooker',            f2: 'Dricus du Plessis',cls: 'Middleweight',      title: 'MW Title' },
-        { id: 'ufc325-03', f1: 'Robert Whittaker',      f2: 'Ikram Aliskerov',  cls: 'Middleweight',      title: '' },
-      ]},
-      prelims: { label: 'Prelims', fights: [
-        { id: 'ufc325-04', f1: 'Justin Tafa',           f2: 'Justin Rodrigues', cls: 'Heavyweight',       title: '' },
-        { id: 'ufc325-05', f1: 'Tyson Pedro',           f2: 'Marcin Prachnio',  cls: 'Light Heavyweight', title: '' },
-      ]},
-      early: { label: 'Early Prelims', fights: [
-        { id: 'ufc325-06', f1: 'Jamie Mullarkey',       f2: 'Dean Barry',       cls: 'Lightweight',       title: '' },
-      ]},
-    },
-  },
-
-  // ─────────────────────────────────────────────────────────────
-  // UFC 324 · Jan 24, 2026 · Las Vegas
-  // NOTE: Verify this card — data may be incomplete
-  // ─────────────────────────────────────────────────────────────
-  {
-    id: 'ufc324',
-    name: 'UFC 324',
-    subtitle: 'Gaethje vs. Pimblett',
-    date: 'Jan 24', day: 24, year: 2026,
-    venue: 'T-Mobile Arena · Las Vegas',
-    timeUTC: '2026-01-25T03:00:00Z',
-    winOverride: '2026-04-30T23:59:00Z',
-    fotn: { fightId: 'ufc324-01', note: '' },
-    tabs: {
-      main: { label: 'Main Card', fights: [
-        { id: 'ufc324-01', f1: 'Justin Gaethje',    f2: 'Paddy Pimblett',       cls: 'Lightweight',   title: '' },
-        { id: 'ufc324-02', f1: 'Aljamain Sterling', f2: 'Umar Nurmagomedov',    cls: 'Bantamweight',  title: 'BW Title' },
-        { id: 'ufc324-03', f1: 'Chris Weidman',     f2: 'Brendan Allen',        cls: 'Middleweight',  title: '' },
-      ]},
-      prelims: { label: 'Prelims', fights: [
-        { id: 'ufc324-04', f1: 'Song Yadong',       f2: 'Merab Dvalishvili',    cls: 'Bantamweight',  title: '' },
-        { id: 'ufc324-05', f1: 'Bo Nickal',         f2: 'Eryk Anders',          cls: 'Middleweight',  title: '' },
-      ]},
-      early: { label: 'Early Prelims', fights: [
-        { id: 'ufc324-06', f1: 'Michael Morales',   f2: 'Randy Brown',          cls: 'Welterweight',  title: '' },
-      ]},
-    },
-  },
-
-];
-
-// ─────────────────────────────────────────────────────────────
-// UPCOMING EVENTS
-// ─────────────────────────────────────────────────────────────
-const UPCOMING = [
-
-  {
-    id: 'ufcfn-emmett',
-    date: 'Mar 14', day: 14, year: 2026,
-    name: 'UFC Fight Night', main: 'Emmett vs. Vallejos',
-    venue: 'UFC Apex · Las Vegas',
-    timeUTC: '2026-03-15T01:00:00Z',
-    tabs: {
-      main: { label: 'Main Card', fights: [
-        { id: 'ufcfn-emmett-01', f1: 'Josh Emmett',      f2: 'Kevin Vallejos',      cls: 'Featherweight',       title: '' },
-        { id: 'ufcfn-emmett-02', f1: 'Amanda Lemos',     f2: 'Gillian Robertson',   cls: 'W. Strawweight',      title: '' },
-        { id: 'ufcfn-emmett-03', f1: 'Ion Cuțelaba',     f2: 'Oumar Sy',            cls: 'Light Heavyweight',   title: '' },
-        { id: 'ufcfn-emmett-04', f1: 'Andre Fili',       f2: 'Jose Miguel Delgado', cls: 'Featherweight',       title: '' },
-        { id: 'ufcfn-emmett-05', f1: 'Marwan Rahiki',    f2: 'Harry Hardwick',      cls: 'Featherweight',       title: '' },
-        { id: 'ufcfn-emmett-06', f1: 'Vitor Petrino',    f2: 'Steven Asplund',      cls: 'Heavyweight',         title: '' },
-      ]},
-      prelims: { label: 'Prelims', fights: [
-        { id: 'ufcfn-emmett-07', f1: 'Charles Johnson',  f2: 'Bruno Gustavo da Silva', cls: 'Flyweight',        title: '' },
-        { id: 'ufcfn-emmett-08', f1: 'Brad Tavares',     f2: 'Eryk Anders',         cls: 'Middleweight',        title: '' },
-        { id: 'ufcfn-emmett-09', f1: 'Chris Curtis',     f2: 'Myktybek Orolbai',    cls: 'Welterweight',        title: '' },
-        { id: 'ufcfn-emmett-10', f1: 'Bolaji Oki',       f2: 'Manoel Sousa',        cls: 'Lightweight',         title: '' },
-        { id: 'ufcfn-emmett-11', f1: 'Luan Lacerda',     f2: 'Hecher Sosa',         cls: 'Bantamweight',        title: '' },
-        { id: 'ufcfn-emmett-12', f1: 'Beatriz Mesquita', f2: 'Montserrat Rendon',   cls: 'W. Bantamweight',     title: '' },
-        { id: 'ufcfn-emmett-13', f1: 'Elijah Smith',     f2: 'You Su-young',        cls: 'Bantamweight',        title: '' },
-        { id: 'ufcfn-emmett-14', f1: 'Piera Rodriguez',  f2: 'Sam Hughes',          cls: 'W. Strawweight',      title: '' },
-      ]},
-      early: { label: 'Early Prelims', fights: [] },
-    },
-  },
-
-  {
-    id: 'ufcfn-evloev',
-    date: 'Mar 21', day: 21, year: 2026,
-    name: 'UFC Fight Night', main: 'Evloev vs. Murphy',
-    venue: 'O2 Arena · London',
-    timeUTC: '2026-03-21T17:00:00Z',
-    tabs: {
-      main: { label: 'Main Card', fights: [
-        { id: 'ufcfn-evloev-01', f1: 'Movsar Evloev',   f2: 'Lerone Murphy',   cls: 'Featherweight', title: '' },
-        { id: 'ufcfn-evloev-02', f1: 'Paddy Pimblett',  f2: 'TBA',            cls: 'Lightweight',   title: '' },
-        { id: 'ufcfn-evloev-03', f1: 'Molly McCann',    f2: 'TBA',            cls: 'Flyweight',     title: '' },
-      ]},
-      prelims: { label: 'Prelims', fights: [
-        { id: 'ufcfn-evloev-04', f1: 'Muhammad Mokaev', f2: 'TBA',            cls: 'Flyweight',     title: '' },
-      ]},
-      early: { label: 'Early Prelims', fights: [] },
-    },
-  },
-
-  {
-    id: 'ufcfn-adesanya',
-    date: 'Mar 28', day: 28, year: 2026,
-    name: 'UFC Fight Night', main: 'Adesanya vs. Pyfer',
-    venue: 'Climate Pledge Arena · Seattle',
-    timeUTC: '2026-03-29T02:00:00Z',
-    tabs: {
-      main: { label: 'Main Card', fights: [
-        { id: 'ufcfn-adesanya-01', f1: 'Israel Adesanya', f2: 'Joe Pyfer',   cls: 'Middleweight',  title: '' },
-        { id: 'ufcfn-adesanya-02', f1: 'Kyler Phillips',  f2: 'TBA',         cls: 'Bantamweight',  title: '' },
-      ]},
-      prelims: { label: 'Prelims', fights: [] },
-      early:   { label: 'Early Prelims', fights: [] },
-    },
-  },
-
-  {
-    id: 'ufcfn-moicano',
-    date: 'Apr 4', day: 4, year: 2026,
-    name: 'UFC Fight Night', main: 'Moicano vs. Duncan',
-    venue: 'TBA', timeUTC: '2026-04-05T01:00:00Z',
-    tabs: {
-      main:   { label: 'Main Card', fights: [
-        { id: 'ufcfn-moicano-01', f1: 'Renato Moicano', f2: 'Erin Duncan', cls: 'Lightweight', title: '' },
-      ]},
-      prelims: { label: 'Prelims', fights: [] },
-      early:   { label: 'Early Prelims', fights: [] },
-    },
-  },
-
-  {
-    id: 'ufc327',
-    date: 'Apr 11', day: 11, year: 2026,
-    name: 'UFC 327', main: 'Procházka vs. Ulberg',
-    venue: 'Kaseya Center · Miami',
-    timeUTC: '2026-04-12T02:00:00Z',
-    tabs: {
-      main: { label: 'Main Card', fights: [
-        { id: 'ufc327-01', f1: 'Jiří Procházka', f2: 'Carlos Ulberg', cls: 'Light Heavyweight', title: 'LHW Title' },
-      ]},
-      prelims: { label: 'Prelims', fights: [] },
-      early:   { label: 'Early Prelims', fights: [] },
-    },
-  },
-
-  {
-    id: 'ufcfn-burns',
-    date: 'Apr 18', day: 18, year: 2026,
-    name: 'UFC Fight Night', main: 'Burns vs. Malott',
-    venue: 'TBA', timeUTC: '2026-04-19T01:00:00Z',
-    tabs: {
-      main: { label: 'Main Card', fights: [
-        { id: 'ufcfn-burns-01', f1: 'Gilbert Burns', f2: 'Carlos Malott', cls: 'Welterweight', title: '' },
-      ]},
-      prelims: { label: 'Prelims', fights: [] },
-      early:   { label: 'Early Prelims', fights: [] },
-    },
-  },
-
-  {
-    id: 'ufcfn-brady',
-    date: 'Apr 25', day: 25, year: 2026,
-    name: 'UFC Fight Night', main: 'Brady vs. Buckley',
-    venue: 'TBA', timeUTC: '2026-04-26T01:00:00Z',
-    tabs: {
-      main: { label: 'Main Card', fights: [
-        { id: 'ufcfn-brady-01', f1: 'Sean Brady', f2: 'Jalin Turner', cls: 'Welterweight', title: '' },
-      ]},
-      prelims: { label: 'Prelims', fights: [] },
-      early:   { label: 'Early Prelims', fights: [] },
-    },
-  },
-
-  {
-    id: 'ufcfn-jdm',
-    date: 'May 2', day: 2, year: 2026,
-    name: 'UFC Fight Night', main: 'Della Maddalena vs. Prates',
-    venue: 'RAC Arena · Perth',
-    timeUTC: '2026-05-03T11:00:00Z',
-    tabs: {
-      main: { label: 'Main Card', fights: [
-        { id: 'ufcfn-jdm-01', f1: 'Jack Della Maddalena', f2: 'Carlos Prates', cls: 'Welterweight', title: '' },
-      ]},
-      prelims: { label: 'Prelims', fights: [] },
-      early:   { label: 'Early Prelims', fights: [] },
-    },
-  },
-
-];
-
-// ═══════════════════════════════════════════════════
-// UTILS
-// ═══════════════════════════════════════════════════
-const SC=n=>parseFloat(n)>=4.5?'g':parseFloat(n)>=3.5?'ok':parseFloat(n)>=2.5?'avg':'bad';
-const WORD=n=>parseFloat(n)>=4.5?'Exceptional':parseFloat(n)>=4.0?'Great':parseFloat(n)>=3.5?'Good':parseFloat(n)>=3.0?'Average':parseFloat(n)>=2.0?'Below Avg':'Poor';
-const fid=(f1,f2)=>(f1+'_vs_'+f2).replace(/[\s'.]/g,'_');
-const dbFid=(f)=>f.dbId||fid(f.f1,f.f2);
-const rKey=(f1,f2)=>(f1.split(' ').pop()+'_'+f2.split(' ').pop()).toLowerCase().replace(/[^a-z0-9_]/g,'');
-const rElId=(evId,f1,f2)=>('rl_'+evId+'_'+rKey(f1,f2)).replace(/[^a-zA-Z0-9_]/g,'');
-function fmtET(u){try{return new Date(u).toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true,timeZone:'America/New_York'})+' ET';}catch{return '';}}
-function fmtLocal(u){try{return new Date(u).toLocaleString([],{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true,timeZoneName:'short'});}catch{return '';}}
-const userTZ=Intl.DateTimeFormat().resolvedOptions().timeZone;
-function hotColor(avg){
-  const n=parseFloat(avg)||0;
-  if(n>=4.5)return '#22c55e';
-  if(n>=3.5)return '#e6b800';
-  if(n>=2.5)return '#e87419';
-  return '#e8192c';
-}
-function hotEmoji(avg){
-  const n=parseFloat(avg)||0;
-  if(n>=4.5)return '🔥';if(n>=3.5)return '🌡️';if(n>=2.5)return '😐';return '❄️';
-}
-
-function evPhase(ev) {
-  if (!ev) return 'closed';
-  const now = Date.now();
-  const start = new Date(ev.timeUTC).getTime();
-  const end = evWinEnd(ev).getTime();
-  if (now < start) return 'upcoming';
-  if (now > end) return 'closed';
-  
-  // Estimate live phases (assuming 2 hours per section)
-  const elapsed = now - start;
-  if (elapsed < 2 * 3600000) return 'live-early';
-  if (elapsed < 4 * 3600000) return 'live-prelims';
-  return 'live-main';
-}
-
-function tabIsOpen(ev, tabKey) {
-  if (!evInWindow(ev)) return false;
-  const now = Date.now();
-  const start = new Date(ev.timeUTC).getTime();
-  
-  if (tabKey === 'early') return now >= start;
-  if (tabKey === 'prelims') return now >= start + 2 * 3600000;
-  if (tabKey === 'main') return now >= start + 4 * 3600000;
-  return true;
-}
-
-function tabTimeLeft(ev, tabKey) {
-  const now = Date.now();
-  const start = new Date(ev.timeUTC).getTime();
-  let targetTime = start;
-  
-  if (tabKey === 'prelims') targetTime += 2 * 3600000;
-  if (tabKey === 'main') targetTime += 4 * 3600000;
-  
-  const d = targetTime - now;
-  if (d <= 0) return null;
-  
-  return [
-    Math.floor(d / 3600000), 
-    Math.floor((d % 3600000) / 60000), 
-    Math.floor((d % 60000) / 1000)
-  ].map(n => String(n).padStart(2, '0')).join(':');
-}
-
-// ═══════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════
-let upPage=0;const PER=4;
-let curEv=null,curUpcEv=null,curTab='main';
-let mStars=0,selF=[],mPF={},pendingEvId='',pendingFightId='',pendingF1='',pendingF2='';
-let popupFighter='',popupFromView='';
-let curWCFilter='All';
-let fighterIndex=null,allFighterData=[];
-
-// ═══════════════════════════════════════════════════
-// MENU
-// ═══════════════════════════════════════════════════
-function toggleMenu(){document.getElementById('menuDd').classList.toggle('hidden');}
-function closeMenu(){document.getElementById('menuDd').classList.add('hidden');}
-document.addEventListener('click',e=>{if(!e.target.closest('.menu-wrap'))closeMenu();});
-
-// ═══════════════════════════════════════════════════
-// COUNTDOWN
-// ═══════════════════════════════════════════════════
-const CD_T=new Date('2026-03-15T01:00:00Z');
-function tick(){
-  const now=Date.now();
-  let d=Math.max(0,(CD_T-now)/1000);
-  const p=[Math.floor(d/86400),Math.floor((d%=86400,d/3600)),Math.floor((d%=3600,d/60)),Math.floor(d%60)];
-  ['cd-d','cd-h','cd-m','cd-s'].forEach((id,i)=>document.getElementById(id).textContent=String(p[i]).padStart(2,'0'));
-  // "Voting opens in" badge — show when next event is within 48h
-  const badge=document.getElementById('votingOpensBadge');
-  if(badge){
-    const nextEv=UPCOMING[0];
-    if(nextEv){
-      const evStart=new Date(nextEv.timeUTC).getTime();
-      const tillStart=evStart-now;
-      const started=now>=evStart;
-      const votingEnd=evStart+WIN_H*3600000;
-      const votingOpen=now>=evStart&&now<votingEnd;
-      if(votingOpen){
-        badge.style.display='block';
-        badge.textContent='🗳 VOTING OPEN NOW';
-        badge.style.color='var(--green)';
-      } else if(!started&&tillStart<48*3600000){
-        // show "voting opens in X"
-        const secsLeft=Math.floor(tillStart/1000);
-        const dh=Math.floor(secsLeft/3600),dm=Math.floor((secsLeft%3600)/60),ds=secsLeft%60;
-        badge.style.display='block';
-        badge.style.color='var(--red)';
-        badge.textContent='VOTING OPENS IN '+String(dh).padStart(2,'0')+'h '+String(dm).padStart(2,'0')+'m '+String(ds).padStart(2,'0')+'s';
-      } else {
-        badge.style.display='none';
-      }
-    }
-  }
-}
-tick();setInterval(tick,1000);
-(()=>{const et=fmtET('2026-03-15T01:00:00Z'),lt=fmtLocal('2026-03-15T01:00:00Z');document.getElementById('cdET').textContent=et;if(userTZ!=='America/New_York'&&lt)document.getElementById('cdLocal').textContent='Your time: '+lt;})();
-function updateNowBar(){
-  const oe=EVENTS.find(e=>evInWindow(e));
-  document.getElementById('nowBar').classList.toggle('show',!!oe);
-  if(oe){
-    const el=document.getElementById('nowBarEvName');
-    if(el){el.textContent=oe.name+': '+oe.subtitle;el.onclick=()=>openEvent(oe.id);}
-  }
-}
-function nowBarClick(){const oe=EVENTS.find(e=>evInWindow(e));if(oe)openEvent(oe.id);}
-function nowBarRate(){const oe=EVENTS.find(e=>evInWindow(e));if(oe)openEvent(oe.id);}
-updateNowBar();setInterval(updateNowBar,1000);
-
-// ═══════════════════════════════════════════════════
-// VIEW MANAGER
-// ═══════════════════════════════════════════════════
-const VIEWS=['listView','detailView','upcomingDetailView','fightersView','fighterDetailView'];
-function showOnly(id){VIEWS.forEach(v=>{const el=document.getElementById(v);if(el)el.style.display=v===id?'block':'none';}); if(id==='listView'){document.getElementById('listView').style.display='block';}}
-function goHome(){
-  showOnly('listView');
-  document.getElementById('navEvents').classList.add('on');
-  document.getElementById('navFighters').classList.remove('on');
-  if(window._wt)clearInterval(window._wt);
-  renderRecent();window.scrollTo(0,0);
-}
-function showView(v){
-  if(v==='events'){showOnly('listView');document.getElementById('navEvents').classList.add('on');document.getElementById('navFighters').classList.remove('on');renderRecent();}
-  else if(v==='fighters'){showOnly('fightersView');document.getElementById('navFighters').classList.add('on');document.getElementById('navEvents').classList.remove('on');buildWCFilters();renderFighters();}
-  window.scrollTo(0,0);
-}
-async function openEvent(id){
-  curEv=EVENTS.find(e=>e.id===id);if(!curEv)return;
-  curTab='main';
-  await loadAgg(id);
-  showOnly('detailView');
-  document.getElementById('navEvents').classList.add('on');
-  document.getElementById('navFighters').classList.remove('on');
-  renderDetail();window.scrollTo(0,0);
-}
-function openUpcoming(idx){
-  curUpcEv=UPCOMING[idx];if(!curUpcEv)return;
-  showOnly('upcomingDetailView');
-  renderUpcomingDetail();window.scrollTo(0,0);
-}
-
-// ═══════════════════════════════════════════════════
-// SCORE DISPLAY HELPER
-// ═══════════════════════════════════════════════════
-function scoreCol(ev){
-  const a=getEventAvg(ev);
-  if(!a)return '<div class="ev-sc-empty">no ratings</div>';
-  return `<div class="ev-sc-n ${SC(a.avg)}">${a.avg}</div><div class="ev-sc-word ${SC(a.avg)}">${WORD(a.avg)}</div><div class="ev-sc-cnt">~${a.cnt} ratings</div>`;
+function redditBtn(f1,f2){
+  const url=redditSearchUrl(f1,f2);
+  return `<a class="reddit-search" href="${url}" target="_blank" rel="noopener">🔍 reddit</a>`;
 }
 
 // ═══════════════════════════════════════════════════
@@ -1386,7 +761,7 @@ function renderHero(){
   const fightsHtml=mainFights.map(f=>{
     const fi=dbFid(f);
     const myR=LOCAL.get(ev.id,fi);
-    const agg=getAgg(ev.id,fi);
+    const agg=getAgg(ev.id,fi,ev);
     const evN=(ev.name+': '+ev.subtitle).replace(/'/g,"\'");
     const f1e=f.f1.replace(/'/g,"\'"),f2e=f.f2.replace(/'/g,"\'");
     return `<div class="hero-fight-row">
@@ -1426,7 +801,8 @@ function renderHero(){
 
 function renderRecent(){
   renderHero();
-  document.getElementById('recentList').innerHTML=EVENTS.map(ev=>{
+  const total=Math.ceil(EVENTS.length/PER);
+  document.getElementById('recentList').innerHTML=EVENTS.slice(recPage*PER,(recPage+1)*PER).map(ev=>{
     const et=fmtET(ev.timeUTC),lt=fmtLocal(ev.timeUTC);
     return `<div class="ev-card" onclick="openEvent('${ev.id}')">
       <div class="ev-acc"></div>
@@ -1445,8 +821,15 @@ function renderRecent(){
       </div>
     </div>`;
   }).join('');
+  document.getElementById('recPgInfo').textContent=(recPage+1)+'/'+total;
+  document.getElementById('recPgPrev').disabled=recPage===0;
+  document.getElementById('recPgNext').disabled=recPage>=total-1;
 }
+function recPrev(){if(recPage>0){recPage--;renderRecent();}}
+function recNext(){const t=Math.ceil(EVENTS.length/PER);if(recPage<t-1){recPage++;renderRecent();}}
 
+function upPrev(){if(upPage>0){upPage--;renderUpcoming();}}
+function upNext(){const t=Math.ceil(UPCOMING.length/PER);if(upPage<t-1){upPage++;renderUpcoming();}}
 function renderUpcoming(){
   const total=Math.ceil(UPCOMING.length/PER),now=Date.now();
   document.getElementById('upcList').innerHTML=UPCOMING.slice(upPage*PER,(upPage+1)*PER).map((ev,relIdx)=>{
@@ -1473,31 +856,19 @@ function changePage(d){upPage=Math.max(0,Math.min(Math.ceil(UPCOMING.length/PER)
 // ═══════════════════════════════════════════════════
 // UPCOMING DETAIL
 // ═══════════════════════════════════════════════════
-const HYPE_LIMITS={mustwatch:5,neutral:3,boring:2};
-const HYPE_CFG={
-  mustwatch:{icon:'🔥',label:'Must Watch',color:'var(--red)',   border:'rgba(232,25,44,.4)', bg:'var(--red-glow)'},
-  neutral:  {icon:'😐',label:'Neutral',   color:'var(--text2)',border:'var(--border2)',      bg:'var(--s3)'},
-  boring:   {icon:'💤',label:'Skip It',   color:'var(--dim)',  border:'var(--border2)',      bg:'var(--s3)'},
-};
-function getDMVote(evId,fi){try{return localStorage.getItem('fv_dm_'+evId+'_'+fi)||null;}catch{return null;}}
-function getUserDMCounts(evId){
-  const counts={mustwatch:0,neutral:0,boring:0};
-  if(!curUpcEv)return counts;
-  Object.values(curUpcEv.tabs).flatMap(t=>t.fights).filter(f=>f.f1&&f.f2&&f.f1!=='TBA').forEach(f=>{
-    const v=getDMVote(evId,dbFid(f));if(v&&counts[v]!==undefined)counts[v]++;
-  });
-  return counts;
+function getHypeMeter(evId){try{const v=localStorage.getItem('fv_hype10_'+evId);return v!==null?parseInt(v):null;}catch{return null;}}
+function setHypeMeter(evId,val){try{localStorage.setItem('fv_hype10_'+evId,val);}catch{}}
+function hypeMeterAvg(evId){
+  // Simulated community avg (seeded from evId hash so it's consistent)
+  let h=0;for(let i=0;i<evId.length;i++)h=(h*31+evId.charCodeAt(i))&0xffff;
+  return 4+(h%60)/10; // range 4.0–9.9
 }
-function voteDM(evId,fi,type){
-  const cur=getDMVote(evId,fi);
-  if(cur===type){try{localStorage.removeItem('fv_dm_'+evId+'_'+fi);}catch(x){}renderUpcomingDetail();return;}
-  const counts=getUserDMCounts(evId);
-  if(cur&&counts[cur]>0)counts[cur]--;
-  if(counts[type]>=HYPE_LIMITS[type]){showToast('Max '+HYPE_LIMITS[type]+' '+HYPE_CFG[type].label+' picks');return;}
-  try{localStorage.setItem('fv_dm_'+evId+'_'+fi,type);}catch(x){}
+function castHypeMeter(evId,val){
+  setHypeMeter(evId,val);
   renderUpcomingDetail();
+  const labels=['Skip it','Skip it','Meh','Low key','Ok','Mid card','Could be good','Looks decent','High hopes','Very hyped','BANGER 🔥'];
+  showToast('🔥 '+val+'/10 — '+labels[val]);
 }
-function getCommunityHype(evId,fi){try{const v=localStorage.getItem('fv_dmtot_'+evId+'_'+fi);return v?JSON.parse(v):{mustwatch:0,neutral:0,boring:0};}catch{return{mustwatch:0,neutral:0,boring:0};}}
 
 function predictedExcitement(f1,f2){
   if(!fighterIndex)fighterIndex=buildFighterIndex();
@@ -1665,38 +1036,25 @@ function castHype(evId, tabKey, val){
 // ═══════════════════════════════════════════════════
 function fotnHtml(ev){
   if(!ev.fotn||!ev.fotn.fightId)return '';
-  // Look up the actual fight by stable ID
   const allFights=Object.values(ev.tabs).flatMap(t=>t.fights);
   const fight=allFights.find(f=>f.id===ev.fotn.fightId);
   if(!fight)return '';
-  const vk=`fv_fotn_${ev.id}`;
-  let vote=null;try{const v=localStorage.getItem(vk);if(v)vote=JSON.parse(v);}catch(x){}
-  const agreedPct=72;
+  // Only show if voting is closed (fight already happened)
+  if(evInWindow(ev))return '';
   const f1e=fight.f1.replace(/'/g,"\'"),f2e=fight.f2.replace(/'/g,"\'");
+  const agg=getAgg(ev.id,dbFid(fight),ev);
+  const scoreHtml=agg?`<span class="sc-badge ${SC(agg.avg)}" style="font-size:13px;font-weight:700">${agg.avg}</span>${agg.isDemo?'<span style="font-family:IBM Plex Mono,monospace;font-size:8px;color:var(--dim);margin-left:4px">DEMO</span>':''}`:''
   return `<div class="fotn-card">
-    <div class="fotn-head"><div class="fotn-lbl">⭐ Fight of the Night</div><span class="fotn-source">via Tapology</span></div>
+    <div class="fotn-head"><div class="fotn-lbl">⭐ Fight of the Night</div><div class="fotn-source">awarded post-event</div></div>
     <div class="fotn-body">
       <div class="fotn-fight">
         <span class="fp-trigger" onclick="showFighterPopup(event,'${f1e}','${fight.cls}')">${fight.f1}</span>
         <span class="fotn-vs">vs</span>
         <span class="fp-trigger" onclick="showFighterPopup(event,'${f2e}','${fight.cls}')">${fight.f2}</span>
-        ${vote?'<span class="fotn-badge">FOTN</span>':''}
       </div>
-      <div class="fotn-cls">${fight.cls}</div>
-      <div class="fotn-agree">
-        <span>Do you agree?</span>
-        <button onclick="voteFotn('${ev.id}',true)" class="${vote?.agree===true?'fotn-yes-on':'fotn-yes'}">👍 Yes</button>
-        <button onclick="voteFotn('${ev.id}',false)" class="${vote?.agree===false?'fotn-no-on':'fotn-no'}">👎 No</button>
-        <span class="fotn-pct">${agreedPct}% agree</span>
-      </div>
+      <div class="fotn-cls" style="display:flex;align-items:center;gap:8px;margin-top:2px">${fight.cls}${scoreHtml}</div>
     </div>
   </div>`;
-}
-
-function voteFotn(evId,agree){
-  try{localStorage.setItem(`fv_fotn_${evId}`,JSON.stringify({agree}));}catch(x){}
-  if(curEv&&curEv.id===evId)renderDetail();
-  showToast(agree?'👍 You agree!':'👎 Noted');
 }
 
 // ═══════════════════════════════════════════════════
@@ -1781,9 +1139,7 @@ function fightRowsHtml(fights,evId,evName,tabOpen=true){
         ${agg&&agg.cnt>0?`<div class="fight-sc-n ${SC(agg.avg)}">${agg.avg}</div><div class="fight-sc-sub">${agg.cnt}</div>`:'<div class="fight-sc-empty">—</div>'}
       </div>
       ${myR?`<span class="fight-my">${'★'.repeat(myR.stars)}</span>`:''}
-      <div class="reddit-wrap">
-        <a class="reddit-link loading" id="${eid}" onclick="return false"></a>
-      </div>
+      ${redditBtn(f.f1,f.f2)}
       ${tabOpen
         ? `<button class="fight-rate-btn ${myR?'rated':''}" onclick="event.stopPropagation();openModal('${evN}','${f1e} vs ${f2e}','${evId}','${fi}','${f1e}','${f2e}')">${myR?'edit':'rate'}</button>`
         : `<span class="fight-rate-btn" style="color:var(--muted);cursor:default;border-color:transparent">closed</span>`}
@@ -1836,7 +1192,7 @@ function renderDetail(){
   // Only hide fights during live phase for UPCOMING events that just started
   // Past events (winOverride) always show fights
   const isLiveHide=(ph==='live-early'&&curTab!=='early')||(ph==='live-prelims'&&curTab==='main');
-  const isPastEvent=ev.winOverride!=null;
+  const isPastEvent=Date.now()>new Date(ev.timeUTC).getTime();
   let fightBlock;
   if(isLiveHide && !isPastEvent){
     const tLeft=tabTimeLeft(ev,curTab);
@@ -1861,7 +1217,7 @@ function renderDetail(){
         ${agg&&agg.cnt>0?`<div class="ev-hcard-sc">
           <div class="ev-big-score ${SC(agg.avg)}">${agg.avg}</div>
           <div class="ev-big-word ${SC(agg.avg)}">${WORD(agg.avg)}</div>
-          <div class="ev-big-cnt">${agg.cnt} rating${agg.cnt===1?'':'s'}${myOverall?` · <span style="color:var(--gold)">${'★'.repeat(myOverall.stars)}</span>`:''}</div>
+          <div class="ev-big-cnt">${agg.isDemo?'<span style="font-family:IBM Plex Mono,monospace;font-size:9px;color:var(--dim);background:var(--s3);border:1px solid var(--border2);padding:2px 6px;border-radius:4px;letter-spacing:.05em">DEMO RATING</span>':(agg.cnt+' rating'+(agg.cnt===1?'':'s'))}${myOverall?` · <span style="color:var(--gold)">${'★'.repeat(myOverall.stars)}</span>`:''}</div>
         </div>`:''}
       </div>
       ${(()=>{
@@ -1894,7 +1250,7 @@ function renderDetail(){
   Object.values(ev.tabs).forEach(t=>t.fights.forEach(f=>{
     const k=f.f1+'|'+f.f2;if(seen.has(k))return;seen.add(k);
     const eid=rElId(ev.id,f.f1,f.f2);
-    fetchReddit(f.f1,f.f2,[eid]);
+
   }));
 
   if(evInWindow(ev)){
