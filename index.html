@@ -520,7 +520,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 </div>
 
 <!-- LIST VIEW -->
-<div id="listView" class="show" style="display:none">
+<div id="listView" style="display:none">
   <div class="page"><div class="page-inner">
     <div id="heroRating"></div>
     <div class="sec-lbl a0" id="recentLbl">Recent Events</div>
@@ -985,6 +985,39 @@ function tick(){
   }
 }
 tick();setInterval(tick,1000);
+
+// ═══════════════════════════════════════════════════
+// VIEW SWITCHING
+// ═══════════════════════════════════════════════════
+const VIEWS=['listView','detailView','upcomingDetailView','fightersView','fighterDetailView'];
+function showView(id){
+  VIEWS.forEach(v=>{const el=document.getElementById(v);if(el)el.style.display=(v===id)?'block':'none';});
+  window.scrollTo(0,0);
+}
+function goHome(){
+  curEv=null;curUpcEv=null;
+  showView('listView');
+  renderRecent();
+  renderUpcoming();
+}
+function openEvent(evId){
+  const ev=EVENTS.find(e=>e.id===evId);if(!ev)return;
+  curEv=ev;curTab='main';
+  showView('detailView');
+  loadAgg(ev.id).then(()=>renderDetail());
+}
+function openUpcoming(idx){
+  const ev=UPCOMING[idx];if(!ev)return;
+  curUpcEv=ev;
+  showView('upcomingDetailView');
+  renderUpcomingDetail();
+}
+function goFighters(){
+  showView('fightersView');
+  buildWCFilters();
+  renderFighters();
+}
+
 
 // ═══════════════════════════════════════════════════
 // RENDER LIST
