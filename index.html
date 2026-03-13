@@ -454,9 +454,15 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 
 
 /* ── HOME SIDE-BY-SIDE LAYOUT ── */
-.home-cols{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;margin-top:8px;}
-@media(max-width:640px){.home-cols{grid-template-columns:1fr;gap:0;}}
-.home-col-left,.home-col-right{}
+.home-cols{display:grid;grid-template-columns:55% 1fr;gap:28px;align-items:start;margin-top:8px;}
+@media(max-width:700px){.home-cols{grid-template-columns:1fr;gap:0;}}
+/* In narrow column, hide the timestamp and shrink score col */
+.home-col-left .ev-time{display:none;}
+.home-col-left .ev-sc-col{min-width:58px;}
+.home-col-left .ev-name{font-size:13px;}
+.home-col-right .upc-card{padding:9px 12px;gap:10px;}
+.home-col-right .upc-time{display:none;}
+.home-col-right .upc-right{display:none;}
 /* ── PAGINATION BAR ── */
 .pg-bar{display:flex;align-items:center;gap:8px;margin-top:10px;justify-content:flex-end;}
 </style>
@@ -741,6 +747,31 @@ const EVENTS=[
     early:{label:'Early Prelims',fights:[
       {id:'ufcfn-strickland-13',f1:'Dinis Paiva',     f2:'Joanderson Brito',  cls:'Featherweight',    title:''},
       {id:'ufcfn-strickland-14',f1:'Cody Durden',     f2:'Nate Maness',       cls:'Flyweight',        title:''},
+    ]}
+  }},
+  {id:'ufcfn-bautista',name:'UFC Fight Night',subtitle:'Bautista vs. Oliveira',
+   date:'Feb 7',day:7,year:2026,venue:'UFC Apex · Las Vegas',
+   timeUTC:'2026-02-08T02:00:00Z',winOverride:'2026-04-30T23:59:00Z',
+   fotn:{fightId:'ufcfn-bautista-01',note:''},
+   tabs:{
+    main:{label:'Main Card',fights:[
+      {id:'ufcfn-bautista-01',f1:'Mateusz Rębecki',    f2:'Manuel Torres',      cls:'Lightweight',      title:''},
+      {id:'ufcfn-bautista-02',f1:'Kazula Vargas',       f2:'Damir Ismagulov',    cls:'Lightweight',      title:''},
+      {id:'ufcfn-bautista-03',f1:'Arman Tsarukyan',     f2:'Islam Makhachev',    cls:'Lightweight',      title:'LW Title'},
+      {id:'ufcfn-bautista-04',f1:'Reinier de Ridder',   f2:'Aleksandar Rakić',   cls:'Light Heavyweight',title:''},
+      {id:'ufcfn-bautista-05',f1:'Michael Bautista',    f2:'Victor Oliveira',    cls:'Lightweight',      title:''},
+      {id:'ufcfn-bautista-06',f1:'Kyoji Horiguchi',     f2:'Amir Albazi',        cls:'Flyweight',        title:'FLW Title'},
+    ]},
+    prelims:{label:'Prelims',fights:[
+      {id:'ufcfn-bautista-07',f1:'Nursultan Ruziboev',  f2:'Gabriel Bonfim',     cls:'Welterweight',     title:''},
+      {id:'ufcfn-bautista-08',f1:'Veniamin Grigoryev',  f2:'Price Okposo',       cls:'Lightweight',      title:''},
+      {id:'ufcfn-bautista-09',f1:'Furkan Karabag',      f2:'Felipe Colares',     cls:'Bantamweight',     title:''},
+      {id:'ufcfn-bautista-10',f1:'Fares Ziam',          f2:'Alexis Davis',       cls:'Lightweight',      title:''},
+      {id:'ufcfn-bautista-11',f1:'Fernie Garcia',       f2:'Ricky Turcios',      cls:'Featherweight',    title:''},
+      {id:'ufcfn-bautista-12',f1:'Tagir Ulanbekov',     f2:'Kleydson Rodrigues', cls:'Flyweight',        title:''},
+    ]},
+    early:{label:'Early Prelims',fights:[
+      {id:'ufcfn-bautista-13',f1:'Da-un Jung',          f2:'Bogdan Guskov',      cls:'Light Heavyweight',title:''},
     ]}
   }},
   {id:'ufc325',name:'UFC 325',subtitle:'Volkanovski vs. Lopes 2',
