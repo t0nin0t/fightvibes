@@ -927,6 +927,33 @@ function evWinEnd(ev){ const base=new Date(ev.timeUTC).getTime(); return new Dat
 function evInWindow(ev){ const now=Date.now(); const start=new Date(ev.timeUTC).getTime(); return now>=start && now<evWinEnd(ev).getTime(); }
 function winLeft(ev){ if(!ev)return null; const d=evWinEnd(ev)-Date.now(); if(d<=0)return null; return[Math.floor(d/3600000),Math.floor((d%3600000)/60000),Math.floor((d%60000)/1000)].map(n=>String(n).padStart(2,'0')).join(':'); }
 
+function evPhase(ev){
+  if(!ev)return 'closed';
+  const now=Date.now(), start=new Date(ev.timeUTC).getTime(), end=evWinEnd(ev).getTime();
+  if(now<start)return 'upcoming';
+  if(now>end)return 'closed';
+  const el=now-start;
+  if(el<2*3600000)return 'live-early';
+  if(el<4*3600000)return 'live-prelims';
+  return 'live-main';
+}
+function tabIsOpen(ev,tabKey){
+  if(!evInWindow(ev))return false;
+  const now=Date.now(), start=new Date(ev.timeUTC).getTime();
+  if(tabKey==='early')return now>=start;
+  if(tabKey==='prelims')return now>=start+2*3600000;
+  if(tabKey==='main')return now>=start+4*3600000;
+  return true;
+}
+function tabTimeLeft(ev,tabKey){
+  const now=Date.now(), start=new Date(ev.timeUTC).getTime();
+  let t=start;
+  if(tabKey==='prelims')t+=2*3600000;
+  if(tabKey==='main')t+=4*3600000;
+  const d=t-now; if(d<=0)return null;
+  return[Math.floor(d/3600000),Math.floor((d%3600000)/60000),Math.floor((d%60000)/1000)].map(n=>String(n).padStart(2,'0')).join(':');
+}
+
 const SC=n=>parseFloat(n)>=4.5?'g':parseFloat(n)>=3.5?'ok':parseFloat(n)>=2.5?'avg':'bad';
 const WORD=n=>parseFloat(n)>=4.5?'Exceptional':parseFloat(n)>=4.0?'Great':parseFloat(n)>=3.5?'Good':parseFloat(n)>=3.0?'Average':parseFloat(n)>=2.0?'Below Avg':'Poor';
 const fid=(f1,f2)=>(f1+'_vs_'+f2).replace(/[\s'.]/g,'_');
@@ -989,9 +1016,14 @@ tick();setInterval(tick,1000);
 // ═══════════════════════════════════════════════════
 // VIEW SWITCHING
 // ═══════════════════════════════════════════════════
+const VIEW_ALIAS={'events':'listView','home':'listView','fighters':'fightersView'};
 const VIEWS=['listView','detailView','upcomingDetailView','fightersView','fighterDetailView'];
 function showView(id){
-  VIEWS.forEach(v=>{const el=document.getElementById(v);if(el)el.style.display=(v===id)?'block':'none';});
+  const rid=VIEW_ALIAS[id]||id;
+  VIEWS.forEach(v=>{const el=document.getElementById(v);if(el)el.style.display=(v===rid)?'block':'none';});
+  // update nav highlight
+  document.getElementById('navEvents')?.classList.toggle('on', rid==='listView');
+  document.getElementById('navFighters')?.classList.toggle('on', rid==='fightersView');
   window.scrollTo(0,0);
 }
 function goHome(){
