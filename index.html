@@ -420,7 +420,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .hero-fight-name .fvs{color:var(--red);font-family:'IBM Plex Mono',monospace;font-size:9px;margin:0 3px;}
 .hero-fight-stars{font-size:11px;color:var(--gold);}
 .hero-fight-empty{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);}
-.hero-fight-sc{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;}
+.hero-fight-sc{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:700;}
 .hero-fight-sc.g{color:var(--green)}.hero-fight-sc.ok{color:var(--gold)}.hero-fight-sc.avg{color:#e87419}.hero-fight-sc.bad{color:var(--red)}
 
 
@@ -1105,6 +1105,16 @@ function renderHero(){
   if(!openEv){heroEl.innerHTML='';if(recentLbl)recentLbl.style.marginTop='0';return;}
   const myOverall=LOCAL.get(openEv.id,'overall');
   const ev=openEv;
+  // top rated fight across whole card
+  const allEvFights=Object.values(ev.tabs).flatMap(t=>t.fights);
+  const ratedFights=allEvFights.map(f=>({f,a:getAgg(ev.id,dbFid(f),ev)})).filter(x=>x.a&&x.a.cnt>0);
+  ratedFights.sort((a,b)=>parseFloat(b.a.avg)-parseFloat(a.a.avg));
+  const topF=ratedFights[0];
+  const topFightBar=topF?`<div style="display:flex;align-items:center;gap:8px;background:rgba(230,184,0,.07);border:1px solid rgba(230,184,0,.18);border-radius:7px;padding:7px 12px;margin-bottom:10px">
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:700;letter-spacing:.8px;color:var(--gold)">TOP FIGHT</span>
+    <span style="flex:1;font-size:13px;font-weight:600;color:var(--text)">${topF.f.f1} vs ${topF.f.f2}</span>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:700;color:var(--gold)">${topF.a.avg}</span>
+  </div>`:'';
   // gather main card fights for quick view
   const mainFights=ev.tabs.main.fights.slice(0,5);
   const fightsHtml=mainFights.map(f=>{
@@ -1140,6 +1150,7 @@ function renderHero(){
       </div>
       <button class="hero-btn" onclick="event.stopPropagation();openEvent('${ev.id}')">Rate Fights →</button>
     </div>
+    ${topFightBar}
     <div class="hero-fights">${fightsHtml}</div>
   </div>`;
   if(recentLbl)recentLbl.style.marginTop='8px';
@@ -1165,7 +1176,7 @@ function renderRecent(){
     const myVotes=allF.filter(f=>LOCAL.get(ev.id,dbFid(f)));
     const votedHtml=myVotes.length>0
       ?`<span class="ev-voted-lbl">✓ you rated ${myVotes.length} fight${myVotes.length>1?'s':''}</span>`
-      :'';
+      :`<span class="ev-voted-lbl" style="color:var(--red)">you rated 0 fights</span>`;
     return `<div class="ev-card" onclick="openEvent('${ev.id}')">
       <div class="ev-acc"></div>
       <div class="ev-body">
@@ -1208,14 +1219,25 @@ function renderUpcoming(){
       :vote!==null
         ?`<div style="font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.5"><span style="color:var(--text2);font-weight:700">${vote}/10 🔥</span> <span style="color:var(--dim);font-size:10px">· community <b style="color:var(--gold)">${commAvg}/10</b></span></div>`
         :`<div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--red)">rate the hype → <span style="color:var(--dim)">${commAvg}/10</span></div>`;
+        const hypeVal=vote!==null?vote:null;
+    const pipCount=11;
+    const activePip=hypeVal!==null?Math.round(hypeVal):-1;
+    const pipHtml=Array.from({length:pipCount},(_,i)=>{
+      const active=activePip>=0&&i<=activePip;
+      const col=i<=3?'var(--muted)':i<=6?'var(--gold)':'var(--red)';
+      return `<div style="width:4px;height:${8+i}px;border-radius:2px;background:${active?col:'var(--border2)'};flex-shrink:0"></div>`;
+    }).join('');
+    const hypeColBlock=`<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;width:42px">
+      <div style="display:flex;align-items:flex-end;gap:2px;height:28px">${pipHtml}</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;color:${hypeVal!==null?'var(--text2)':'var(--muted)'}">${hypeVal!==null?hypeVal+'/10':'hype?'}</div>
+    </div>`;
     return `<div class="upc-card" onclick="openUpcoming(${idx})">
-      <div class="upc-date-col"><div class="upc-mo">${ev.date.split(' ')[0]}</div><div class="upc-day">${ev.day}</div></div>
-      <div class="ev-divider" style="margin:0 2px"></div>
+      ${hypeColBlock}
+      <div class="ev-divider" style="margin:0 4px"></div>
       <div class="upc-info">
         <div style="display:flex;align-items:center;gap:5px;margin-bottom:2px"><span class="org-tag">UFC</span><span class="upc-name">${ev.name}: ${ev.main}</span></div>
-        <div class="upc-venue">${ev.venue}</div>
+        <div class="upc-venue">${ev.venue} · ${ev.date}</div>
         <div class="upc-time">${et}${userTZ!=='America/New_York'&&lt?' · '+lt:''}</div>
-        <div style="margin-top:3px">${hypeSnippet}</div>
       </div>
       <div class="upc-right"><div class="upc-days">${Math.max(0,diff)}</div><div class="upc-days-l">days</div></div>
     </div>`;
