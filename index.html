@@ -102,10 +102,10 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .ev-venue{font-size:11px;color:var(--dim);}
 .ev-time{font-size:11px;color:var(--dim);margin-top:1px;}
 .ev-time b{color:var(--text2);}
-.ev-sc-col{text-align:right;flex-shrink:0;min-width:76px;}
-.ev-sc-n{font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:700;line-height:1;}
+.ev-sc-col{text-align:right;flex-shrink:0;min-width:64px;}
+.ev-sc-n{font-family:'IBM Plex Mono',monospace;font-size:30px;font-weight:700;line-height:1;}
 .ev-sc-n.g{color:var(--green)}.ev-sc-n.ok{color:var(--gold)}.ev-sc-n.avg{color:#e87419}.ev-sc-n.bad{color:var(--red)}
-.ev-sc-word{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-top:1px;}
+.ev-sc-word{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
 .ev-sc-word.g{color:var(--green)}.ev-sc-word.ok{color:var(--gold)}.ev-sc-word.avg{color:#e87419}.ev-sc-word.bad{color:var(--red)}
 .ev-sc-cnt{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--dim);margin-top:2px;}
 .demo-lbl{font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--dim);background:var(--s3);border:1px solid var(--border2);padding:1px 4px;border-radius:3px;letter-spacing:.05em;}
@@ -125,7 +125,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .upc-venue{font-size:11px;color:var(--dim);}
 .upc-time{font-size:11px;color:var(--dim);margin-top:1px;}
 .upc-right{text-align:right;flex-shrink:0;}
-.upc-days{font-family:'IBM Plex Mono',monospace;font-size:19px;font-weight:700;color:var(--text2);}
+.upc-days{font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:700;color:var(--text2);}
 .upc-days-l{font-family:'IBM Plex Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
 .pg-wrap{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:10px;}
 .pg-btn{background:var(--s1);border:1px solid var(--border2);color:var(--dim);width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
@@ -454,17 +454,16 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 
 
 /* ── HOME SIDE-BY-SIDE LAYOUT ── */
-.home-cols{display:grid;grid-template-columns:55% 1fr;gap:28px;align-items:start;margin-top:8px;}
-@media(max-width:700px){.home-cols{grid-template-columns:1fr;gap:0;}}
-/* In narrow column, hide the timestamp and shrink score col */
-.home-col-left .ev-time{display:none;}
-.home-col-left .ev-sc-col{min-width:58px;}
-.home-col-left .ev-name{font-size:13px;}
-.home-col-right .upc-card{padding:9px 12px;gap:10px;}
-.home-col-right .upc-time{display:none;}
-.home-col-right .upc-right{display:none;}
+.home-cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;margin-top:8px;}
+@media(max-width:680px){.home-cols{grid-template-columns:1fr;gap:0;}}
 /* ── PAGINATION BAR ── */
 .pg-bar{display:flex;align-items:center;gap:8px;margin-top:10px;justify-content:flex-end;}
+.ev-top-fight{display:flex;align-items:center;gap:5px;margin-top:4px;flex-wrap:wrap;}
+.ev-top-lbl{font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:700;letter-spacing:.8px;color:var(--gold);background:var(--gold-d);border:1px solid rgba(230,184,0,.2);padding:1px 5px;border-radius:3px;flex-shrink:0;}
+.ev-top-name{font-size:11px;color:var(--text2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ev-top-sc{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;flex-shrink:0;}
+.ev-top-sc.g{color:var(--green)}.ev-top-sc.ok{color:var(--gold)}.ev-top-sc.avg{color:#e87419}.ev-top-sc.bad{color:var(--red)}
+.ev-voted-lbl{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--green);display:block;margin-top:3px;}
 </style>
 </head>
 <body>
@@ -1010,8 +1009,8 @@ function hotEmoji(avg){const n=parseFloat(avg)||0;if(n>=4.5)return '🔥';if(n>=
 
 function scoreCol(ev){
   const a=getEventAvg(ev);
-  if(!a)return '<span style="font-family:IBM Plex Mono,monospace;font-size:10px;color:var(--muted)">no ratings</span>';
-  return `<span class="sc-badge ${SC(a.avg)}">${a.avg}</span>${a.isDemo?'<span style="font-family:IBM Plex Mono,monospace;font-size:8px;color:var(--dim);display:block;text-align:center">DEMO</span>':''}`;
+  if(!a)return '<div class="ev-sc-empty">—</div>';
+  return `<div class="ev-sc-n ${SC(a.avg)}">${a.avg}</div><div class="ev-sc-word ${SC(a.avg)}">${WORD(a.avg)}</div>${a.isDemo?'<div class="demo-lbl">DEMO</div>':''}`;
 }
 
 // ═══════════════════════════════════════════════════
@@ -1152,6 +1151,19 @@ function renderRecent(){
   const total=Math.ceil(EVENTS.length/PER);
   document.getElementById('recentList').innerHTML=EVENTS.slice(recPage*PER,(recPage+1)*PER).map(ev=>{
     const et=fmtET(ev.timeUTC),lt=fmtLocal(ev.timeUTC);
+    // top rated fight
+    const allF=Object.values(ev.tabs).flatMap(t=>t.fights);
+    const rated=allF.map(f=>({f,a:getAgg(ev.id,dbFid(f),ev)})).filter(x=>x.a&&x.a.cnt>0);
+    rated.sort((a,b)=>parseFloat(b.a.avg)-parseFloat(a.a.avg));
+    const top=rated[0];
+    const topFightHtml=top
+      ?`<div class="ev-top-fight"><span class="ev-top-lbl">TOP</span><span class="ev-top-name">${top.f.f1} vs ${top.f.f2}</span><span class="ev-top-sc ${SC(top.a.avg)}">${top.a.avg}</span></div>`
+      :'';
+    // voted check
+    const myVotes=allF.filter(f=>LOCAL.get(ev.id,dbFid(f)));
+    const votedHtml=myVotes.length>0
+      ?`<span class="ev-voted-lbl">✓ you rated ${myVotes.length} fight${myVotes.length>1?'s':''}</span>`
+      :'';
     return `<div class="ev-card" onclick="openEvent('${ev.id}')">
       <div class="ev-acc"></div>
       <div class="ev-body">
@@ -1160,7 +1172,8 @@ function renderRecent(){
         <div class="ev-info">
           <div class="ev-name-row"><span class="org-tag">UFC</span><span class="ev-name">${ev.name}: ${ev.subtitle}</span></div>
           <div class="ev-venue">${ev.venue}</div>
-          <div class="ev-time"><b>${et}</b>${userTZ!=='America/New_York'&&lt?' · '+lt:''}</div>
+          ${topFightHtml}
+          ${votedHtml}
         </div>
         <div class="ev-sc-col">
           ${scoreCol(ev)}
@@ -1189,10 +1202,10 @@ function renderUpcoming(){
     const hasStarted=now>=new Date(ev.timeUTC).getTime();
     const commAvg=hypeMeterAvg(evId).toFixed(1);
     const hypeSnippet=hasStarted
-      ?`<span style="font-family:IBM Plex Mono,monospace;font-size:9px;color:var(--muted)">hype vote closed · community: ${commAvg}/10</span>`
+      ?`<div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted)">hype closed · <b style="color:var(--dim)">${commAvg}/10</b></div>`
       :vote!==null
-        ?`<span style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--dim)">your hype: <b style="color:var(--text2)">${vote}/10 🔥</b> · community avg: <b style="color:var(--gold)">${commAvg}/10</b></span>`
-        :`<span style="font-family:IBM Plex Mono,monospace;font-size:9px;color:var(--muted)">rate the hype → community: ${commAvg}/10</span>`;
+        ?`<div style="font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.5"><span style="color:var(--text2);font-weight:700">${vote}/10 🔥</span> <span style="color:var(--dim);font-size:10px">· community <b style="color:var(--gold)">${commAvg}/10</b></span></div>`
+        :`<div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--red)">rate the hype → <span style="color:var(--dim)">${commAvg}/10</span></div>`;
     return `<div class="upc-card" onclick="openUpcoming(${idx})">
       <div class="upc-date-col"><div class="upc-mo">${ev.date.split(' ')[0]}</div><div class="upc-day">${ev.day}</div></div>
       <div class="ev-divider" style="margin:0 2px"></div>
