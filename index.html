@@ -452,6 +452,13 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .pred-bar-track{height:4px;background:var(--muted);border-radius:2px;overflow:hidden;margin-bottom:2px;}
 .pred-bar-fill{height:100%;border-radius:2px;transition:width .6s;}
 
+
+/* ── HOME SIDE-BY-SIDE LAYOUT ── */
+.home-cols{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;margin-top:8px;}
+@media(max-width:640px){.home-cols{grid-template-columns:1fr;gap:0;}}
+.home-col-left,.home-col-right{}
+/* ── PAGINATION BAR ── */
+.pg-bar{display:flex;align-items:center;gap:8px;margin-top:10px;justify-content:flex-end;}
 </style>
 </head>
 <body>
@@ -523,20 +530,24 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 <div id="listView" style="display:none">
   <div class="page"><div class="page-inner">
     <div id="heroRating"></div>
-    <div class="sec-lbl a0" id="recentLbl">Recent Events</div>
-    <div class="ev-grid a1" id="recentList"></div>
-    <div class="pg-bar" id="recPgBar">
-      <button class="pg-btn" id="recPgPrev" onclick="recPrev()" disabled>‹</button>
-      <span class="pg-info" id="recPgInfo">1/1</span>
-      <button class="pg-btn" id="recPgNext" onclick="recNext()">›</button>
-    </div>
-    <div class="sec-lbl a2">Upcoming</div>
-    <div class="a3">
-      <div class="upc-list" id="upcList"></div>
-      <div class="pg-wrap">
-        <button class="pg-btn" id="pgPrev" onclick="changePage(-1)">‹</button>
-        <span class="pg-info" id="pgInfo"></span>
-        <button class="pg-btn" id="pgNext" onclick="changePage(1)">›</button>
+    <div class="home-cols a1">
+      <div class="home-col-left">
+        <div class="sec-lbl" id="recentLbl">Recent Events</div>
+        <div class="ev-grid" id="recentList"></div>
+        <div class="pg-bar" id="recPgBar">
+          <button class="pg-btn" id="recPgPrev" onclick="recPrev()" disabled>‹</button>
+          <span class="pg-info" id="recPgInfo">1/1</span>
+          <button class="pg-btn" id="recPgNext" onclick="recNext()">›</button>
+        </div>
+      </div>
+      <div class="home-col-right">
+        <div class="sec-lbl">Upcoming</div>
+        <div class="upc-list" id="upcList"></div>
+        <div class="pg-bar" id="upPgBar">
+          <button class="pg-btn" id="pgPrev" onclick="changePage(-1)">‹</button>
+          <span class="pg-info" id="pgInfo"></span>
+          <button class="pg-btn" id="pgNext" onclick="changePage(1)">›</button>
+        </div>
       </div>
     </div>
   </div></div>
@@ -976,7 +987,7 @@ function scoreCol(ev){
 // STATE
 // ═══════════════════════════════════════════════════
 let recPage=0,upPage=0;
-const PER=5;
+const PER=4;
 let curEv=null,curUpcEv=null,curTab='main';
 let mStars=0,selF=[],mPF={},pendingEvId='',pendingFightId='',pendingF1='',pendingF2='';
 let popupFighter='',popupFromView='';
@@ -1145,11 +1156,12 @@ function renderUpcoming(){
     const et=fmtET(ev.timeUTC),lt=fmtLocal(ev.timeUTC);
     const vote=getHypeMeter(evId);
     const hasStarted=now>=new Date(ev.timeUTC).getTime();
+    const commAvg=hypeMeterAvg(evId).toFixed(1);
     const hypeSnippet=hasStarted
-      ?'<span style="font-family:IBM Plex Mono,monospace;font-size:9px;color:var(--muted)">hype vote closed</span>'
+      ?`<span style="font-family:IBM Plex Mono,monospace;font-size:9px;color:var(--muted)">hype vote closed · community: ${commAvg}/10</span>`
       :vote!==null
-        ?`<span style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--dim)">your hype: <b style="color:var(--text2)">${vote}/10 🔥</b> · <span style="color:var(--red);text-decoration:underline;cursor:pointer">edit</span></span>`
-        :'<span style="font-family:IBM Plex Mono,monospace;font-size:9px;color:var(--muted)">rate the hype →</span>';
+        ?`<span style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--dim)">your hype: <b style="color:var(--text2)">${vote}/10 🔥</b> · community avg: <b style="color:var(--gold)">${commAvg}/10</b></span>`
+        :`<span style="font-family:IBM Plex Mono,monospace;font-size:9px;color:var(--muted)">rate the hype → community: ${commAvg}/10</span>`;
     return `<div class="upc-card" onclick="openUpcoming(${idx})">
       <div class="upc-date-col"><div class="upc-mo">${ev.date.split(' ')[0]}</div><div class="upc-day">${ev.day}</div></div>
       <div class="ev-divider" style="margin:0 2px"></div>
@@ -1290,7 +1302,7 @@ function fotnHtml(ev){
   if(evInWindow(ev))return '';
   const f1e=fight.f1.replace(/'/g,"\'"),f2e=fight.f2.replace(/'/g,"\'");
   const agg=getAgg(ev.id,dbFid(fight),ev);
-  const scoreHtml=agg?`<span class="sc-badge ${SC(agg.avg)}" style="font-size:13px;font-weight:700">${agg.avg}</span>${agg.isDemo?'<span style="font-family:IBM Plex Mono,monospace;font-size:8px;color:var(--dim);margin-left:4px">DEMO</span>':''}`:''
+  const scoreHtml=agg?`<span class="sc-badge ${SC(agg.avg)}" style="font-size:13px;font-weight:700">${agg.avg}</span>${agg.isDemo?'<span style="font-family:IBM Plex Mono,monospace;font-size:8px;color:var(--dim);margin-left:4px">DEMO</span>':''}`:'';
   return `<div class="fotn-card">
     <div class="fotn-head"><div class="fotn-lbl">⭐ Fight of the Night</div><div class="fotn-source">awarded post-event</div></div>
     <div class="fotn-body">
