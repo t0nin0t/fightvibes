@@ -118,15 +118,15 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .upc-card{background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:11px 15px;display:flex;align-items:center;gap:13px;cursor:pointer;transition:all .15s;}
 .upc-card:hover{border-color:var(--border2);background:var(--s2);transform:translateY(-1px);}
 .upc-date-col{min-width:44px;text-align:center;flex-shrink:0;}
-.upc-mo{font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--dim);}
+.upc-mo{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--dim);}
 .upc-day{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:700;line-height:1;}
 .upc-info{flex:1;}
 .upc-name{font-size:13px;font-weight:600;}
 .upc-venue{font-size:11px;color:var(--dim);}
-.upc-time{font-size:11px;color:var(--dim);margin-top:1px;}
+.upc-time{font-size:11px;color:var(--text2);margin-top:1px;font-weight:500;}
 .upc-right{text-align:right;flex-shrink:0;}
 .upc-days{font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:700;color:var(--text2);}
-.upc-days-l{font-family:'IBM Plex Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
+.upc-days-l{font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text2);}
 .pg-wrap{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:10px;}
 .pg-btn{background:var(--s1);border:1px solid var(--border2);color:var(--dim);width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
 .pg-btn:hover:not(:disabled){border-color:var(--dim);color:var(--text);background:var(--s2);}
@@ -699,7 +699,7 @@ const EVENTS=[
   }},
   {id:'ufcfn-moreno',name:'UFC Fight Night',subtitle:'Moreno vs. Kavanagh',
    date:'Feb 28',day:28,year:2026,venue:'Foro Sol · Mexico City',
-   timeUTC:'2026-03-01T02:00:00Z',winOverride:'2026-04-30T23:59:00Z',
+   timeUTC:'2026-03-01T02:00:00Z',winOverride:'2026-03-03T06:00:00Z',
    fotn:{fightId:'ufcfn-moreno-01',note:''},
    tabs:{
     main:{label:'Main Card',fights:[
@@ -724,7 +724,7 @@ const EVENTS=[
   }},
   {id:'ufcfn-strickland',name:'UFC Fight Night',subtitle:'Strickland vs. Hernandez',
    date:'Feb 21',day:21,year:2026,venue:'Toyota Center · Houston',
-   timeUTC:'2026-02-22T02:00:00Z',winOverride:'2026-04-30T23:59:00Z',
+   timeUTC:'2026-02-22T02:00:00Z',winOverride:'2026-02-24T06:00:00Z',
    fotn:{fightId:'ufcfn-strickland-01',note:''},
    tabs:{
     main:{label:'Main Card',fights:[
@@ -750,7 +750,7 @@ const EVENTS=[
   }},
   {id:'ufcfn-bautista',name:'UFC Fight Night',subtitle:'Bautista vs. Oliveira',
    date:'Feb 7',day:7,year:2026,venue:'UFC Apex · Las Vegas',
-   timeUTC:'2026-02-08T02:00:00Z',winOverride:'2026-04-30T23:59:00Z',
+   timeUTC:'2026-02-08T02:00:00Z',winOverride:'2026-02-10T06:00:00Z',
    fotn:{fightId:'ufcfn-bautista-01',note:''},
    tabs:{
     main:{label:'Main Card',fights:[
@@ -775,7 +775,7 @@ const EVENTS=[
   }},
   {id:'ufc325',name:'UFC 325',subtitle:'Volkanovski vs. Lopes 2',
    date:'Jan 31',day:31,year:2026,venue:'Qudos Bank Arena · Sydney',
-   timeUTC:'2026-02-01T10:00:00Z',winOverride:'2026-04-30T23:59:00Z',
+   timeUTC:'2026-02-01T10:00:00Z',winOverride:'2026-02-03T06:00:00Z',
    fotn:{fightId:'ufc325-01',note:''},
    tabs:{
     main:{label:'Main Card',fights:[
@@ -1250,16 +1250,16 @@ function renderUpcoming(){
         +'<div style="display:flex;align-items:flex-end;gap:2px;height:38px">'+pipHtml+'</div>'
         +'<div style="display:flex;align-items:center;gap:4px;margin-top:2px">'
           +'<div style="text-align:center">'
-            +'<div style="font-family:IBM Plex Mono,monospace;font-size:7px;color:var(--muted);margin-bottom:1px">comm</div>'
-            +'<div style="font-family:IBM Plex Mono,monospace;font-size:11px;font-weight:700;color:'+commCol+(commOnFire?';text-shadow:0 0 6px currentColor':'')+'" >'+commAvg+'</div>'
+            +'<div style="font-family:IBM Plex Mono,monospace;font-size:10px;color:var(--text2);margin-bottom:1px">comm</div>'
+            +'<div style="font-family:IBM Plex Mono,monospace;font-size:13px;font-weight:700;color:'+commCol+(commOnFire?';text-shadow:0 0 6px currentColor':'')+'" >'+commAvg+'</div>'
           +'</div>'
           +(hypeVal!==null
             ?'<div style="width:1px;height:22px;background:var(--border2)"></div>'
              +'<div style="text-align:center">'
-               +'<div style="font-family:IBM Plex Mono,monospace;font-size:7px;color:var(--muted);margin-bottom:1px">you</div>'
-               +'<div style="font-family:IBM Plex Mono,monospace;font-size:11px;font-weight:700;color:'+valCol+(isOnFire?';text-shadow:0 0 6px currentColor':'')+'" >'+hypeVal+'</div>'
+               +'<div style="font-family:IBM Plex Mono,monospace;font-size:10px;color:var(--text2);margin-bottom:1px">you</div>'
+               +'<div style="font-family:IBM Plex Mono,monospace;font-size:13px;font-weight:700;color:'+valCol+(isOnFire?';text-shadow:0 0 6px currentColor':'')+'" >'+hypeVal+'</div>'
              +'</div>'
-            :'<div style="font-family:IBM Plex Mono,monospace;font-size:7px;color:var(--red);margin-top:2px">rate →</div>')
+            :'<div style="font-family:IBM Plex Mono,monospace;font-size:10px;color:var(--red);margin-top:2px">rate →</div>')
         +'</div>'
       +'</div>';
     return `<div class="upc-card" onclick="openUpcoming(${idx})">
