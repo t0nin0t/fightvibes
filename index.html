@@ -104,9 +104,9 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .ev-time b{color:var(--text2);}
 .ev-sc-col{text-align:right;flex-shrink:0;min-width:64px;}
 .ev-sc-n{font-family:'IBM Plex Mono',monospace;font-size:30px;font-weight:700;line-height:1;}
-.ev-sc-n.g{color:var(--green)}.ev-sc-n.ok{color:var(--gold)}.ev-sc-n.avg{color:#e87419}.ev-sc-n.bad{color:var(--red)}
+.ev-sc-n.fire{color:#ef4444;text-shadow:0 0 12px #ef4444,0 0 24px rgba(239,68,68,.4);animation:fireglow 1.4s ease-in-out infinite alternate}.ev-sc-n.hot{color:#ef4444}.ev-sc-n.mid{color:#eab308}.ev-sc-n.cold{color:#3b82f6}
 .ev-sc-word{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
-.ev-sc-word.g{color:var(--green)}.ev-sc-word.ok{color:var(--gold)}.ev-sc-word.avg{color:#e87419}.ev-sc-word.bad{color:var(--red)}
+.ev-sc-word.fire{color:#ef4444}.ev-sc-word.hot{color:#ef4444}.ev-sc-word.mid{color:#eab308}.ev-sc-word.cold{color:#3b82f6}
 .ev-sc-cnt{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--dim);margin-top:2px;}
 .demo-lbl{font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--dim);background:var(--s3);border:1px solid var(--border2);padding:1px 4px;border-radius:3px;letter-spacing:.05em;}
 .ev-sc-empty{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);padding-top:4px;}
@@ -143,9 +143,9 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .ev-hcard-meta span{display:flex;align-items:center;gap:3px;}
 .ev-hcard-sc{text-align:right;flex-shrink:0;}
 .ev-big-score{font-family:'IBM Plex Mono',monospace;font-size:50px;font-weight:700;line-height:1;letter-spacing:-2px;}
-.ev-big-score.g{color:var(--green)}.ev-big-score.ok{color:var(--gold)}.ev-big-score.avg{color:#e87419}.ev-big-score.bad{color:var(--red)}
+.ev-big-score.fire{color:#ef4444;text-shadow:0 0 16px rgba(239,68,68,.5);animation:fireglow 1.4s ease-in-out infinite alternate}.ev-big-score.hot{color:#ef4444}.ev-big-score.mid{color:#eab308}.ev-big-score.cold{color:#3b82f6}
 .ev-big-word{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
-.ev-big-word.g{color:var(--green)}.ev-big-word.ok{color:var(--gold)}.ev-big-word.avg{color:#e87419}.ev-big-word.bad{color:var(--red)}
+.ev-big-word.fire{color:#ef4444;text-shadow:0 0 16px rgba(239,68,68,.5);animation:fireglow 1.4s ease-in-out infinite alternate}.ev-big-word.hot{color:#ef4444}.ev-big-word.mid{color:#eab308}.ev-big-word.cold{color:#3b82f6}
 .ev-big-cnt{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--dim);margin-top:2px;}
 .win-row{margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .win-dot{width:7px;height:7px;border-radius:50%;background:var(--red);animation:pulse 2s infinite;flex-shrink:0;}
@@ -157,7 +157,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .sc-head{padding:11px 17px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;}
 .sc-title{font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);}
 .sc-badge{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;}
-.sc-badge.g{color:var(--green)}.sc-badge.ok{color:var(--gold)}.sc-badge.avg{color:#e87419}.sc-badge.bad{color:var(--red)}
+.sc-badge.fire{color:#ef4444;text-shadow:0 0 8px rgba(239,68,68,.6)}.sc-badge.hot{color:#ef4444}.sc-badge.mid{color:#eab308}.sc-badge.cold{color:#3b82f6}
 .sc-body{padding:15px 17px;}
 .sc-empty{padding:13px 17px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);}
 .sc-footer{padding:10px 17px;background:var(--s2);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
@@ -420,8 +420,8 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .hero-fight-name .fvs{color:var(--red);font-family:'IBM Plex Mono',monospace;font-size:9px;margin:0 3px;}
 .hero-fight-stars{font-size:11px;color:var(--gold);}
 .hero-fight-empty{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);}
-.hero-fight-sc{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:700;}
-.hero-fight-sc.g{color:var(--green)}.hero-fight-sc.ok{color:var(--gold)}.hero-fight-sc.avg{color:#e87419}.hero-fight-sc.bad{color:var(--red)}
+.hero-fight-sc{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:700;min-width:36px;text-align:right;}
+.hero-fight-sc.fire{color:#ef4444;text-shadow:0 0 8px rgba(239,68,68,.5);animation:fireglow 1.4s ease-in-out infinite alternate}.hero-fight-sc.hot{color:#ef4444}.hero-fight-sc.mid{color:#eab308}.hero-fight-sc.cold{color:#3b82f6}.hero-fight-sc.badht-sc.bad{color:var(--red)}
 
 
 /* ── UPCOMING HYPE VOTE ── */
@@ -995,8 +995,8 @@ function tabTimeLeft(ev,tabKey){
   return[Math.floor(d/3600000),Math.floor((d%3600000)/60000),Math.floor((d%60000)/1000)].map(n=>String(n).padStart(2,'0')).join(':');
 }
 
-const SC=n=>parseFloat(n)>=4.5?'g':parseFloat(n)>=3.5?'ok':parseFloat(n)>=2.5?'avg':'bad';
-const WORD=n=>parseFloat(n)>=4.5?'Exceptional':parseFloat(n)>=4.0?'Great':parseFloat(n)>=3.5?'Good':parseFloat(n)>=3.0?'Average':parseFloat(n)>=2.0?'Below Avg':'Poor';
+const SC=n=>parseFloat(n)>=4.5?'fire':parseFloat(n)>=4.0?'hot':parseFloat(n)>=2.0?'mid':'cold';
+const WORD=n=>parseFloat(n)>=4.5?'🔥 On Fire':parseFloat(n)>=4.0?'Great':parseFloat(n)>=3.0?'Decent':parseFloat(n)>=2.0?'Meh':'Skip';
 const fid=(f1,f2)=>(f1+'_vs_'+f2).replace(/[\s'.]/g,'_');
 const dbFid=f=>f.dbId||fid(f.f1,f.f2);
 const rKey=(f1,f2)=>(f1.split(' ').pop()+'_'+f2.split(' ').pop()).toLowerCase().replace(/[^a-z0-9_]/g,'');
@@ -1214,23 +1214,35 @@ function renderUpcoming(){
     const vote=getHypeMeter(evId);
     const hasStarted=now>=new Date(ev.timeUTC).getTime();
     const commAvg=hypeMeterAvg(evId).toFixed(1);
+    const commVal=parseFloat(commAvg);
+    const commCol=commVal>=9?'#ef4444':commVal>=7?'#f97316':commVal>=4?'#eab308':'#3b82f6';
     const hypeSnippet=hasStarted
-      ?`<div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted)">hype closed · <b style="color:var(--dim)">${commAvg}/10</b></div>`
-      :vote!==null
-        ?`<div style="font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.5"><span style="color:var(--text2);font-weight:700">${vote}/10 🔥</span> <span style="color:var(--dim);font-size:10px">· community <b style="color:var(--gold)">${commAvg}/10</b></span></div>`
-        :`<div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--red)">rate the hype → <span style="color:var(--dim)">${commAvg}/10</span></div>`;
+      ?`<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">hype closed · <b style="color:var(--dim)">${commAvg}/10</b></div>`
+      :`<div style="display:flex;align-items:center;gap:6px;margin-top:1px">
+          <div style="display:flex;flex-direction:column">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--dim);margin-bottom:1px">community</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;color:${commCol}">${commAvg}<span style="font-size:9px;color:var(--dim)">/10</span></div>
+          </div>
+          ${vote!==null?`<div style="width:1px;height:28px;background:var(--border2);flex-shrink:0"></div>
+          <div style="display:flex;flex-direction:column">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--dim);margin-bottom:1px">you</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;color:var(--text)">${vote}<span style="font-size:9px;color:var(--dim)">/10</span></div>
+          </div>`:'<div style="font-family:IBM Plex Mono,monospace;font-size:9px;color:var(--muted)">tap to rate →</div>'}
+        </div>`;
         const hypeVal=vote!==null?vote:null;
     const pipCount=11;
     const activePip=hypeVal!==null?Math.round(hypeVal):-1;
+    const pipCols=['#3b82f6','#3b82f6','#3b82f6','#3b82f6','#eab308','#eab308','#eab308','#f97316','#f97316','#ef4444','#ef4444'];
+    const isOnFire=hypeVal!==null&&hypeVal>=9;
     const pipHtml=Array.from({length:pipCount},(_,i)=>{
       const active=activePip>=0&&i<=activePip;
-      const col=i<=3?'var(--muted)':i<=6?'var(--gold)':'var(--red)';
-      return `<div style="width:4px;height:${8+i}px;border-radius:2px;background:${active?col:'var(--border2)'};flex-shrink:0"></div>`;
+      const col=pipCols[i];
+      const anim=active&&isOnFire&&i>=9?' animation:hglow 1.2s ease-in-out infinite alternate;':'';
+      const glow=active&&isOnFire&&i>=9?' box-shadow:0 0 6px 2px '+col+';':'';
+      return '<div style="width:4px;height:'+(8+i*2)+'px;border-radius:2px;background:'+(active?col:'var(--border2)')+';flex-shrink:0;'+glow+anim+'"></div>';
     }).join('');
-    const hypeColBlock=`<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;width:42px">
-      <div style="display:flex;align-items:flex-end;gap:2px;height:28px">${pipHtml}</div>
-      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;color:${hypeVal!==null?'var(--text2)':'var(--muted)'}">${hypeVal!==null?hypeVal+'/10':'hype?'}</div>
-    </div>`;
+    const valCol=hypeVal===null?'var(--muted)':pipCols[Math.min(hypeVal,10)];
+    const hypeColBlock='<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;width:42px"><div style="display:flex;align-items:flex-end;gap:2px;height:38px">'+pipHtml+'</div><div style="font-family:IBM Plex Mono,monospace;font-size:9px;font-weight:700;color:'+valCol+(isOnFire?';text-shadow:0 0 8px currentColor':'')+'">'+(hypeVal!==null?hypeVal+'/10':'hype?')+'</div></div>';
     return `<div class="upc-card" onclick="openUpcoming(${idx})">
       ${hypeColBlock}
       <div class="ev-divider" style="margin:0 4px"></div>
