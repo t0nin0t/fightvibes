@@ -464,6 +464,19 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .ev-top-sc{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;flex-shrink:0;}
 .ev-top-sc.g{color:var(--green)}.ev-top-sc.ok{color:var(--gold)}.ev-top-sc.avg{color:#e87419}.ev-top-sc.bad{color:var(--red)}
 .ev-voted-lbl{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--green);display:block;margin-top:3px;}
+
+/* ── HERO TABS ── */
+.hero-tabs{display:flex;gap:4px;margin-bottom:16px;}
+.hero-tab{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:5px 12px;border-radius:6px;border:1px solid var(--border2);color:var(--dim);cursor:pointer;background:none;transition:all .15s;}
+.hero-tab:hover{color:var(--text2);border-color:var(--border2);}
+.hero-tab.on{color:var(--text);background:var(--s3);border-color:var(--border2);}
+.hero-tab.live-tab.on{color:var(--red);border-color:rgba(232,25,44,.4);background:rgba(232,25,44,.08);}
+.hero-tab.soon-tab.on{color:var(--gold);border-color:rgba(230,184,0,.3);background:rgba(230,184,0,.07);}
+.hero-soon-banner{display:flex;align-items:center;gap:10px;background:rgba(230,184,0,.07);border:1px solid rgba(230,184,0,.2);border-radius:8px;padding:10px 14px;margin-bottom:12px;}
+.hero-soon-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);animation:pulse 2s infinite;flex-shrink:0;}
+.hero-soon-txt{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;letter-spacing:2px;color:var(--gold);text-transform:uppercase;}
+.hero-soon-timer{font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(230,184,0,.7);margin-left:auto;}
+.hero-segment-lbl{font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:8px;}
 </style>
 </head>
 <body>
@@ -1101,62 +1114,163 @@ function renderHero(){
   const heroEl=document.getElementById('heroRating');
   const recentLbl=document.getElementById('recentLbl');
   if(!heroEl)return;
+
+  const now=Date.now();
+  const lastEv=EVENTS[0]; // most recent past event
   const openEv=EVENTS.find(e=>evInWindow(e));
-  if(!openEv){heroEl.innerHTML='';if(recentLbl)recentLbl.style.marginTop='0';return;}
-  const myOverall=LOCAL.get(openEv.id,'overall');
-  const ev=openEv;
-  // top rated fight across whole card
-  const allEvFights=Object.values(ev.tabs).flatMap(t=>t.fights);
-  const ratedFights=allEvFights.map(f=>({f,a:getAgg(ev.id,dbFid(f),ev)})).filter(x=>x.a&&x.a.cnt>0);
-  ratedFights.sort((a,b)=>parseFloat(b.a.avg)-parseFloat(a.a.avg));
-  const topF=ratedFights[0];
-  const topFightBar=topF?`<div style="display:flex;align-items:center;gap:8px;background:rgba(230,184,0,.07);border:1px solid rgba(230,184,0,.18);border-radius:7px;padding:7px 12px;margin-bottom:10px">
-    <span style="font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:700;letter-spacing:.8px;color:var(--gold)">TOP FIGHT</span>
-    <span style="flex:1;font-size:13px;font-weight:600;color:var(--text)">${topF.f.f1} vs ${topF.f.f2}</span>
-    <span style="font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:700;color:var(--gold)">${topF.a.avg}</span>
-  </div>`:'';
-  // gather main card fights for quick view
-  const mainFights=ev.tabs.main.fights.slice(0,5);
-  const fightsHtml=mainFights.map(f=>{
-    const fi=dbFid(f);
-    const myR=LOCAL.get(ev.id,fi);
-    const agg=getAgg(ev.id,fi,ev);
-    const evN=(ev.name+': '+ev.subtitle).replace(/'/g,"\'");
-    const f1e=f.f1.replace(/'/g,"\'"),f2e=f.f2.replace(/'/g,"\'");
-    return `<div class="hero-fight-row">
-      <div class="hero-fight-name">
-        ${f.f1}<span class="fvs">vs</span>${f.f2}
-        ${f.title?`<span class="fight-title-b" style="font-size:7px">${f.title}</span>`:''}
+  const nextUpc=UPCOMING[0];
+  const nextStart=nextUpc?new Date(nextUpc.timeUTC).getTime():null;
+  const msToStart=nextStart?nextStart-now:null;
+
+  // upcoming event phase relative to start
+  // -2h..0: "voting opens soon"
+  // 0..+0.5h: early prelims live
+  // +0.5h..+2.5h: prelims live
+  // +2.5h+: main card live
+  const showSoon=!openEv&&msToStart!==null&&msToStart>0&&msToStart<2*3600000;
+  const showLive=!!openEv;
+
+  // determine which tab is default
+  if(!window._heroTab) window._heroTab=showLive?'live':showSoon?'soon':'last';
+  if(showLive) window._heroTab='live';
+  else if(showSoon&&window._heroTab==='live') window._heroTab='soon';
+  if(!lastEv&&!openEv&&!showSoon){heroEl.innerHTML='';if(recentLbl)recentLbl.style.marginTop='0';return;}
+
+  function fightListHtml(ev,fights,tabOpen){
+    const allF=Object.values(ev.tabs).flatMap(t=>t.fights);
+    const ratedF=allF.map(f=>({f,a:getAgg(ev.id,dbFid(f),ev)})).filter(x=>x.a&&x.a.cnt>0);
+    ratedF.sort((a,b)=>parseFloat(b.a.avg)-parseFloat(a.a.avg));
+    const top=ratedF[0];
+    const topBar=top?`<div style="display:flex;align-items:center;gap:8px;background:rgba(230,184,0,.07);border:1px solid rgba(230,184,0,.15);border-radius:7px;padding:6px 12px;margin-bottom:10px">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:700;letter-spacing:.8px;color:var(--gold)">TOP FIGHT</span>
+      <span style="flex:1;font-size:13px;font-weight:600">${top.f.f1} vs ${top.f.f2}</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;color:var(--gold)">${top.a.avg}</span>
+    </div>`:'';
+    const rows=fights.slice(0,5).map(f=>{
+      const fi=dbFid(f);
+      const myR=LOCAL.get(ev.id,fi);
+      const agg=getAgg(ev.id,fi,ev);
+      const evN=(ev.name+': '+ev.subtitle).replace(/'/g,"\'");
+      const f1e=f.f1.replace(/'/g,"\'"),f2e=f.f2.replace(/'/g,"\'");
+      return `<div class="hero-fight-row">
+        <div class="hero-fight-name">${f.f1}<span class="fvs">vs</span>${f.f2}${f.title?`<span class="fight-title-b" style="font-size:7px;margin-left:4px">${f.title}</span>`:''}</div>
+        ${myR?`<span class="hero-fight-stars">${'★'.repeat(myR.stars)}</span>`:''}
+        ${agg&&agg.cnt>0?`<span class="hero-fight-sc ${SC(agg.avg)}">${agg.avg}</span>`:'<span class="hero-fight-empty">—</span>'}
+        ${tabOpen?`<button onclick="event.stopPropagation();openModal('${evN}','${f1e} vs ${f2e}','${ev.id}','${fi}','${f1e}','${f2e}')" style="background:none;border:1px solid var(--border2);color:var(--dim);padding:2px 7px;font-family:'IBM Plex Mono',monospace;font-size:9px;border-radius:4px;cursor:pointer;transition:all .12s;flex-shrink:0" onmouseenter="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseleave="this.style.borderColor='var(--border2)';this.style.color='var(--dim)'">${myR?'edit':'rate'}</button>`:''}
+      </div>`;
+    }).join('');
+    return topBar+'<div class="hero-fights">'+rows+'</div>';
+  }
+
+  // determine auto-tab for upcoming segment
+  function upcSegment(){
+    if(!nextUpc||msToStart===null)return'main';
+    const elapsed=now-nextStart; // negative = hasn't started
+    if(elapsed<0)return'soon';
+    if(elapsed<0.5*3600000)return'early';
+    if(elapsed<2.5*3600000)return'prelims';
+    return'main';
+  }
+
+  // build tabs list
+  const tabs=[];
+  if(lastEv) tabs.push({key:'last',label:'Last Event'});
+  if(showLive) tabs.push({key:'live',label:'● Rating Open',cls:'live-tab'});
+  if(showSoon||(!showLive&&nextUpc)) tabs.push({key:'soon',label:'Up Next',cls:'soon-tab'});
+
+  if(!tabs.length){heroEl.innerHTML='';if(recentLbl)recentLbl.style.marginTop='0';return;}
+  if(!tabs.find(t=>t.key===window._heroTab)) window._heroTab=tabs[0].key;
+
+  const tabsHtml=tabs.map(t=>`<button class="hero-tab ${t.cls||''} ${window._heroTab===t.key?'on':''}" onclick="event.stopPropagation();window._heroTab='${t.key}';renderHero()">${t.label}</button>`).join('');
+
+  let content='';
+
+  if(window._heroTab==='last'&&lastEv){
+    const myOverall=LOCAL.get(lastEv.id,'overall');
+    const agg=getEventAvg(lastEv);
+    content=`<div onclick="openEvent('${lastEv.id}')">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:4px">
+        <div>
+          <div class="hero-name" style="font-size:18px">${lastEv.name}: ${lastEv.subtitle}</div>
+          <div class="hero-meta">📍 ${lastEv.venue} · ${lastEv.date}, ${lastEv.year}</div>
+        </div>
+        ${agg&&agg.cnt>0?`<div style="text-align:right;flex-shrink:0">
+          <div class="ev-sc-n ${SC(agg.avg)}" style="font-size:32px">${agg.avg}</div>
+          <div class="ev-sc-word ${SC(agg.avg)}">${WORD(agg.avg)}</div>
+          ${myOverall?`<div style="font-size:11px;color:var(--gold);margin-top:2px">${'★'.repeat(myOverall.stars)}${'☆'.repeat(5-myOverall.stars)}</div>`:''}
+        </div>`:''}
       </div>
-      ${myR?`<span class="hero-fight-stars">${'★'.repeat(myR.stars)}</span>`:''}
-      ${agg&&agg.cnt>0?`<span class="hero-fight-sc ${SC(agg.avg)}">${agg.avg}</span>`:'<span class="hero-fight-empty">—</span>'}
-      <button onclick="event.stopPropagation();openModal('${evN}','${f1e} vs ${f2e}','${ev.id}','${fi}','${f1e}','${f2e}')" style="background:none;border:1px solid var(--border2);color:var(--dim);padding:2px 7px;font-family:'IBM Plex Mono',monospace;font-size:9px;border-radius:4px;cursor:pointer;transition:all .12s;flex-shrink:0" onmouseenter="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseleave="this.style.borderColor='var(--border2)';this.style.color='var(--dim)'">${myR?'edit':'rate'}</button>
+      ${fightListHtml(lastEv,lastEv.tabs.main.fights,false)}
     </div>`;
-  }).join('');
-  heroEl.innerHTML=`<div class="hero-card a0" onclick="openEvent('${ev.id}')">
-    <div class="hero-live">
-      <span class="hero-dot"></span>
-      <span class="hero-lbl">Rating Open Now</span>
-      <span class="hero-timer" id="heroTimer">${winLeft(openEv)}</span>
-    </div>
-    <div class="hero-name">${ev.name}: ${ev.subtitle}</div>
-    <div class="hero-meta">📍 ${ev.venue} &nbsp;·&nbsp; ${ev.date}, ${ev.year}</div>
-    <div class="hero-bottom">
-      <div class="hero-score-area">
-        <div class="hero-score-lbl">Your Rating</div>
-        <div class="hero-stars ${myOverall?'rated':''}">
-          ${myOverall?'★'.repeat(myOverall.stars)+'☆'.repeat(5-myOverall.stars):'☆☆☆☆☆ — tap to rate'}
+  }
+
+  if(window._heroTab==='live'&&openEv){
+    const myOverall=LOCAL.get(openEv.id,'overall');
+    const seg=upcSegment();
+    const tabFights=(openEv.tabs[seg]||openEv.tabs.main).fights;
+    content=`<div onclick="openEvent('${openEv.id}')">
+      <div class="hero-live"><span class="hero-dot"></span><span class="hero-lbl">Rating Open Now</span><span class="hero-timer" id="heroTimer">${winLeft(openEv)}</span></div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:4px">
+        <div>
+          <div class="hero-name">${openEv.name}: ${openEv.subtitle}</div>
+          <div class="hero-meta">📍 ${openEv.venue} · ${openEv.date}, ${openEv.year}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div class="hero-score-lbl">Your Rating</div>
+          <div class="hero-stars ${myOverall?'rated':''}">${myOverall?'★'.repeat(myOverall.stars)+'☆'.repeat(5-myOverall.stars):'☆☆☆☆☆'}</div>
+          <button class="hero-btn" style="margin-top:8px" onclick="event.stopPropagation();openEvent('${openEv.id}')">Rate →</button>
         </div>
       </div>
-      <button class="hero-btn" onclick="event.stopPropagation();openEvent('${ev.id}')">Rate Fights →</button>
-    </div>
-    ${topFightBar}
-    <div class="hero-fights">${fightsHtml}</div>
-  </div>`;
+      ${fightListHtml(openEv,tabFights,true)}
+    </div>`;
+  }
+
+  if(window._heroTab==='soon'&&nextUpc){
+    const seg=upcSegment();
+    const segLabel={soon:'Voting Opens Soon',early:'Early Prelims',prelims:'Prelims',main:'Main Card'};
+    const et=fmtET(nextUpc.timeUTC),lt=fmtLocal(nextUpc.timeUTC);
+    const countdown=msToStart>0?formatMs(msToStart):(msToStart>-2.5*3600000?'LIVE NOW':'MAIN CARD');
+    const fights=(nextUpc.tabs&&nextUpc.tabs[seg])||nextUpc.tabs&&nextUpc.tabs.main;
+    const fightPreview=fights?fights.fights.slice(0,5).map(f=>`<div class="hero-fight-row">
+        <div class="hero-fight-name">${f.f1}<span class="fvs">vs</span>${f.f2}${f.title?`<span class="fight-title-b" style="font-size:7px;margin-left:4px">${f.title}</span>`:''}</div>
+        <span class="hero-fight-empty" style="font-size:10px;color:var(--muted)">—</span>
+      </div>`).join(''):'';
+    content=`<div onclick="openUpcoming(0)">
+      <div class="hero-soon-banner"><span class="hero-soon-dot"></span><span class="hero-soon-txt">${segLabel[seg]}</span><span class="hero-soon-timer" id="heroTimer">${countdown}</span></div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:4px">
+        <div>
+          <div class="hero-name" style="font-size:18px">${nextUpc.name}: ${nextUpc.main}</div>
+          <div class="hero-meta">📍 ${nextUpc.venue} · ${nextUpc.date}, ${nextUpc.year}</div>
+          <div class="hero-meta" style="margin-top:2px;color:var(--text2)">${et}${userTZ!=='America/New_York'&&lt?' · '+lt:''}</div>
+        </div>
+      </div>
+      ${fightPreview?`<div class="hero-segment-lbl">${segLabel[seg]==='Voting Opens Soon'?'Main Card Preview':segLabel[seg]}</div><div class="hero-fights">${fightPreview}</div>`:''}
+    </div>`;
+  }
+
+  heroEl.innerHTML=`<div class="hero-card a0">${tabsHtml}${content}</div>`;
   if(recentLbl)recentLbl.style.marginTop='8px';
-  // keep timer ticking
+
   if(window._ht)clearInterval(window._ht);
-  window._ht=setInterval(()=>{const el=document.getElementById('heroTimer');if(!el){clearInterval(window._ht);return;}const r=winLeft(openEv);if(!r){clearInterval(window._ht);renderHero();return;}el.textContent=r;},1000);
+  window._ht=setInterval(()=>{
+    const el=document.getElementById('heroTimer');
+    if(!el){clearInterval(window._ht);return;}
+    if(window._heroTab==='live'&&openEv){
+      const r=winLeft(openEv);if(!r){clearInterval(window._ht);renderHero();return;}el.textContent=r;
+    } else if(window._heroTab==='soon'&&nextUpc&&msToStart!==null){
+      const ms2=new Date(nextUpc.timeUTC).getTime()-Date.now();
+      if(ms2<0&&ms2<-3*3600000){clearInterval(window._ht);renderHero();return;}
+      el.textContent=ms2>0?formatMs(ms2):'LIVE';
+      // auto-switch segment
+      const seg2=upcSegment();
+      if(seg2!==upcSegment()) renderHero();
+    }
+  },1000);
+}
+
+function formatMs(ms){
+  const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);
+  return [h,m,s].map(n=>String(n).padStart(2,'0')).join(':');
 }
 
 function renderRecent(){
@@ -1164,7 +1278,6 @@ function renderRecent(){
   const total=Math.ceil(EVENTS.length/PER);
   document.getElementById('recentList').innerHTML=EVENTS.slice(recPage*PER,(recPage+1)*PER).map(ev=>{
     const et=fmtET(ev.timeUTC),lt=fmtLocal(ev.timeUTC);
-    // top rated fight
     const allF=Object.values(ev.tabs).flatMap(t=>t.fights);
     const rated=allF.map(f=>({f,a:getAgg(ev.id,dbFid(f),ev)})).filter(x=>x.a&&x.a.cnt>0);
     rated.sort((a,b)=>parseFloat(b.a.avg)-parseFloat(a.a.avg));
@@ -1172,7 +1285,6 @@ function renderRecent(){
     const topFightHtml=top
       ?`<div class="ev-top-fight"><span class="ev-top-lbl">TOP</span><span class="ev-top-name">${top.f.f1} vs ${top.f.f2}</span><span class="ev-top-sc ${SC(top.a.avg)}">${top.a.avg}</span></div>`
       :'';
-    // voted check
     const myVotes=allF.filter(f=>LOCAL.get(ev.id,dbFid(f)));
     const votedHtml=myVotes.length>0
       ?`<span class="ev-voted-lbl">✓ you rated ${myVotes.length} fight${myVotes.length>1?'s':''}</span>`
@@ -1199,11 +1311,7 @@ function renderRecent(){
   document.getElementById('recPgPrev').disabled=recPage===0;
   document.getElementById('recPgNext').disabled=recPage>=total-1;
 }
-function recPrev(){if(recPage>0){recPage--;renderRecent();}}
-function recNext(){const t=Math.ceil(EVENTS.length/PER);if(recPage<t-1){recPage++;renderRecent();}}
 
-function upPrev(){if(upPage>0){upPage--;renderUpcoming();}}
-function upNext(){const t=Math.ceil(UPCOMING.length/PER);if(upPage<t-1){upPage++;renderUpcoming();}}
 function renderUpcoming(){
   const total=Math.ceil(UPCOMING.length/PER),now=Date.now();
   document.getElementById('upcList').innerHTML=UPCOMING.slice(upPage*PER,(upPage+1)*PER).map((ev,relIdx)=>{
@@ -1217,19 +1325,19 @@ function renderUpcoming(){
     const commVal=parseFloat(commAvg);
     const commCol=commVal>=9?'#ef4444':commVal>=7?'#f97316':commVal>=4?'#eab308':'#3b82f6';
     const hypeSnippet=hasStarted
-      ?`<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">hype closed · <b style="color:var(--dim)">${commAvg}/10</b></div>`
+      ?`<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2)">hype closed · <b style="color:var(--dim)">${commAvg}/10</b></div>`
       :`<div style="display:flex;align-items:center;gap:6px;margin-top:1px">
           <div style="display:flex;flex-direction:column">
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--dim);margin-bottom:1px">community</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);margin-bottom:1px">community</div>
             <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;color:${commCol}">${commAvg}<span style="font-size:9px;color:var(--dim)">/10</span></div>
           </div>
           ${vote!==null?`<div style="width:1px;height:28px;background:var(--border2);flex-shrink:0"></div>
           <div style="display:flex;flex-direction:column">
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--dim);margin-bottom:1px">you</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);margin-bottom:1px">you</div>
             <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;color:var(--text)">${vote}<span style="font-size:9px;color:var(--dim)">/10</span></div>
-          </div>`:'<div style="font-family:IBM Plex Mono,monospace;font-size:9px;color:var(--muted)">tap to rate →</div>'}
+          </div>`:'<div style="font-family:IBM Plex Mono,monospace;font-size:10px;color:var(--red);margin-top:2px">tap to rate →</div>'}
         </div>`;
-        const hypeVal=vote!==null?vote:null;
+    const hypeVal=vote!==null?vote:null;
     const pipCount=11;
     const activePip=hypeVal!==null?Math.round(hypeVal):-1;
     const pipCols=['#3b82f6','#3b82f6','#3b82f6','#3b82f6','#eab308','#eab308','#eab308','#f97316','#f97316','#ef4444','#ef4444'];
@@ -1243,9 +1351,8 @@ function renderUpcoming(){
       return '<div style="width:4px;height:'+(8+i*2)+'px;border-radius:2px;background:'+(active?col:'var(--border2)')+';flex-shrink:0;'+glow+anim+'"></div>';
     }).join('');
     const valCol=hypeVal===null?'var(--muted)':pipCols[Math.min(hypeVal,10)];
-    // Combined hype block: pip meter + community avg + your vote (if voted)
     const hypeBlock=hasStarted
-      ?'<div style="flex-shrink:0;text-align:center;width:52px"><div style="font-family:IBM Plex Mono,monospace;font-size:8px;color:var(--muted);margin-bottom:2px">hype closed</div><div style="font-family:IBM Plex Mono,monospace;font-size:13px;font-weight:700;color:'+commCol+'">'+commAvg+'<span style="font-size:8px;color:var(--muted)">/10</span></div></div>'
+      ?'<div style="flex-shrink:0;text-align:center;width:52px"><div style="font-family:IBM Plex Mono,monospace;font-size:10px;color:var(--text2);margin-bottom:2px">hype closed</div><div style="font-family:IBM Plex Mono,monospace;font-size:13px;font-weight:700;color:'+commCol+'">'+commAvg+'<span style="font-size:8px;color:var(--muted)">/10</span></div></div>'
       :'<div style="display:flex;flex-direction:column;align-items:center;gap:1px;flex-shrink:0;min-width:52px">'
         +'<div style="display:flex;align-items:flex-end;gap:2px;height:38px">'+pipHtml+'</div>'
         +'<div style="display:flex;align-items:center;gap:4px;margin-top:2px">'
@@ -1277,77 +1384,11 @@ function renderUpcoming(){
   document.getElementById('pgPrev').disabled=upPage===0;
   document.getElementById('pgNext').disabled=upPage>=total-1;
 }
-function changePage(d){upPage=Math.max(0,Math.min(Math.ceil(UPCOMING.length/PER)-1,upPage+d));renderUpcoming();}
-
-// ═══════════════════════════════════════════════════
-// UPCOMING DETAIL
-// ═══════════════════════════════════════════════════
-function getHypeMeter(evId){try{const v=localStorage.getItem('fv_hype10_'+evId);return v!==null?parseInt(v):null;}catch{return null;}}
-function setHypeMeter(evId,val){try{localStorage.setItem('fv_hype10_'+evId,val);}catch{}}
-function hypeMeterAvg(evId){
-  // Simulated community avg (seeded from evId hash so it's consistent)
-  let h=0;for(let i=0;i<evId.length;i++)h=(h*31+evId.charCodeAt(i))&0xffff;
-  return 4+(h%60)/10; // range 4.0–9.9
-}
-function castHypeMeter(evId,val){
-  setHypeMeter(evId,val);
-  renderUpcomingDetail();
-  const labels=['Skip it','Skip it','Meh','Low key','Ok','Mid card','Could be good','Looks decent','High hopes','Very hyped','BANGER 🔥'];
-  showToast('🔥 '+val+'/10 — '+labels[val]);
-}
-
-function predictedExcitement(f1,f2){
-  if(!fighterIndex)fighterIndex=buildFighterIndex();
-  const scores=[];
-  [f1,f2].forEach(name=>{
-    const fights=(fighterIndex[name]||[]).filter(f=>{const a=getAgg(f.evId,f.fi);return a&&a.cnt>0;});
-    if(fights.length){const avg=fights.reduce((s,f)=>s+parseFloat(getAgg(f.evId,f.fi).avg),0)/fights.length;scores.push(avg);}
-  });
-  if(!scores.length)return null;
-  return (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1);
-}
 
 function renderUpcomingDetail(){
-  const ev=curUpcEv;
+  const ev=curUpcEv;if(!ev)return;
+  const now=Date.now(),hasStarted=now>=new Date(ev.timeUTC).getTime();
   const et=fmtET(ev.timeUTC),lt=fmtLocal(ev.timeUTC);
-  const evId='upc_'+ev.date.replace(/ /g,'_').toLowerCase();
-  const now=Date.now(), start=new Date(ev.timeUTC).getTime();
-  const hasStarted=now>=start;
-
-  // Hype vote helpers (localStorage)
-
-  function hypeCardHtml(){
-    // Single hype meter per event (not per section)
-    if(hasStarted) return '';
-    const vote=getHypeMeter(evId);
-    const avg=hypeMeterAvg(evId);
-    const avgPct=Math.round((avg/10)*100);
-    const pips=Array.from({length:11},(_,i)=>i); // 0..10
-    const flameColor=v=>v<=3?'#555':v<=5?'#c06020':v<=7?'#e04a00':'var(--red)';
-    const voted=vote!==null;
-
-    const pipsHtml=pips.map(i=>{
-      const filled=voted&&i<=vote;
-      return '<div class="flame-pip'+(filled?' filled':'')+' " data-v="'+i+'" onclick="castHypeMeter(\''+evId+'\','+i+')" title="'+i+'/10">'+(i===10?'🔥':i===0?'💤':String(i))+'</div>';
-    }).join('');
-
-    const resultHtml=voted?`<div class="hype-result">
-      <div class="hype-result-meta">Community avg: <b style="color:${flameColor(avg)}">${avg.toFixed(1)}/10</b></div>
-      <div class="hype-result-bar" style="width:${avgPct}%;background:linear-gradient(90deg,#555,${flameColor(avg)})"></div>
-      <div class="hype-your-vote">Your vote: <b style="color:${flameColor(vote)}">${vote}/10</b></div>
-    </div>`:
-    '<div class="hype-prompt">How hyped are you? 💤 0 — 10 🔥</div>';
-
-    return `<div class="hype-card">
-      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px">🔥 Hype Meter</div>
-      ${resultHtml}
-      <div class="flame-meter">${pipsHtml}</div>
-      <div class="hype-lbl-row"><span>💤 skip it</span><span>🔥 banger</span></div>
-      ${voted?'<div style="font-size:10px;color:var(--dim);margin-top:4px">tap to change your vote</div>':''}
-    </div>`;
-  }
-
-
   const tabOrder=[['main','Main Card'],['prelims','Prelims'],['early','Early Prelims']];
 
   document.getElementById('upcomingDetailContent').innerHTML=`
