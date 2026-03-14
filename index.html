@@ -675,7 +675,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 const EVENTS=[
   {id:'ufc326',name:'UFC 326',subtitle:'Holloway vs. Oliveira 2',
    date:'Mar 7',day:7,year:2026,venue:'T-Mobile Arena · Las Vegas',
-   timeUTC:'2026-03-08T03:00:00Z',winOverride:'2026-04-30T23:59:00Z',
+   timeUTC:'2026-03-08T03:00:00Z',winOverride:'2026-03-10T06:00:00Z',
    fotn:{fightId:'ufc326-09',note:'Performance bonuses via Tapology'},
    tabs:{
     main:{label:'Main Card',fights:[
@@ -795,7 +795,7 @@ const EVENTS=[
 
 const UPCOMING=[
   {id:'ufcfn-emmett',date:'Mar 14',day:14,year:2026,name:'UFC Fight Night',main:'Emmett vs. Vallejos',
-   venue:'UFC Apex · Las Vegas',timeUTC:'2026-03-15T01:00:00Z',
+   venue:'UFC Apex · Las Vegas',timeUTC:'2026-03-15T01:00:00Z',winOverride:'2026-03-16T13:00:00Z',
    tabs:{
     main:{label:'Main Card',fights:[
       {id:'ufcfn-emmett-01',f1:'Josh Emmett',   f2:'Leandro Vallejos', cls:'Featherweight',title:''},
@@ -1234,6 +1234,7 @@ function renderUpcoming(){
     const activePip=hypeVal!==null?Math.round(hypeVal):-1;
     const pipCols=['#3b82f6','#3b82f6','#3b82f6','#3b82f6','#eab308','#eab308','#eab308','#f97316','#f97316','#ef4444','#ef4444'];
     const isOnFire=hypeVal!==null&&hypeVal>=9;
+    const commOnFire=commVal>=9;
     const pipHtml=Array.from({length:pipCount},(_,i)=>{
       const active=activePip>=0&&i<=activePip;
       const col=pipCols[i];
@@ -1242,14 +1243,32 @@ function renderUpcoming(){
       return '<div style="width:4px;height:'+(8+i*2)+'px;border-radius:2px;background:'+(active?col:'var(--border2)')+';flex-shrink:0;'+glow+anim+'"></div>';
     }).join('');
     const valCol=hypeVal===null?'var(--muted)':pipCols[Math.min(hypeVal,10)];
-    const hypeColBlock='<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;width:42px"><div style="display:flex;align-items:flex-end;gap:2px;height:38px">'+pipHtml+'</div><div style="font-family:IBM Plex Mono,monospace;font-size:9px;font-weight:700;color:'+valCol+(isOnFire?';text-shadow:0 0 8px currentColor':'')+'">'+(hypeVal!==null?hypeVal+'/10':'hype?')+'</div></div>';
+    // Combined hype block: pip meter + community avg + your vote (if voted)
+    const hypeBlock=hasStarted
+      ?'<div style="flex-shrink:0;text-align:center;width:52px"><div style="font-family:IBM Plex Mono,monospace;font-size:8px;color:var(--muted);margin-bottom:2px">hype closed</div><div style="font-family:IBM Plex Mono,monospace;font-size:13px;font-weight:700;color:'+commCol+'">'+commAvg+'<span style="font-size:8px;color:var(--muted)">/10</span></div></div>'
+      :'<div style="display:flex;flex-direction:column;align-items:center;gap:1px;flex-shrink:0;min-width:52px">'
+        +'<div style="display:flex;align-items:flex-end;gap:2px;height:38px">'+pipHtml+'</div>'
+        +'<div style="display:flex;align-items:center;gap:4px;margin-top:2px">'
+          +'<div style="text-align:center">'
+            +'<div style="font-family:IBM Plex Mono,monospace;font-size:7px;color:var(--muted);margin-bottom:1px">comm</div>'
+            +'<div style="font-family:IBM Plex Mono,monospace;font-size:11px;font-weight:700;color:'+commCol+(commOnFire?';text-shadow:0 0 6px currentColor':'')+'" >'+commAvg+'</div>'
+          +'</div>'
+          +(hypeVal!==null
+            ?'<div style="width:1px;height:22px;background:var(--border2)"></div>'
+             +'<div style="text-align:center">'
+               +'<div style="font-family:IBM Plex Mono,monospace;font-size:7px;color:var(--muted);margin-bottom:1px">you</div>'
+               +'<div style="font-family:IBM Plex Mono,monospace;font-size:11px;font-weight:700;color:'+valCol+(isOnFire?';text-shadow:0 0 6px currentColor':'')+'" >'+hypeVal+'</div>'
+             +'</div>'
+            :'<div style="font-family:IBM Plex Mono,monospace;font-size:7px;color:var(--red);margin-top:2px">rate →</div>')
+        +'</div>'
+      +'</div>';
     return `<div class="upc-card" onclick="openUpcoming(${idx})">
-      ${hypeColBlock}
-      <div class="ev-divider" style="margin:0 4px"></div>
-      <div class="upc-info">
+      ${hypeBlock}
+      <div class="ev-divider" style="margin:0 6px"></div>
+      <div class="upc-info" style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:5px;margin-bottom:2px"><span class="org-tag">UFC</span><span class="upc-name">${ev.name}: ${ev.main}</span></div>
-        <div class="upc-venue">${ev.venue} · ${ev.date}</div>
-        <div class="upc-time">${et}${userTZ!=='America/New_York'&&lt?' · '+lt:''}</div>
+        <div class="upc-venue">${ev.venue}</div>
+        <div class="upc-time">${ev.date} · <b>${et}</b>${userTZ!=='America/New_York'&&lt?' · '+lt:''}</div>
       </div>
       <div class="upc-right"><div class="upc-days">${Math.max(0,diff)}</div><div class="upc-days-l">days</div></div>
     </div>`;
