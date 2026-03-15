@@ -1117,7 +1117,7 @@ function renderHero(){
 
   const now=Date.now();
   const lastEv=EVENTS[0]; // most recent past event
-  const openEv=EVENTS.find(e=>evInWindow(e));
+  const openEv=EVENTS.find(e=>evInWindow(e))||UPCOMING.find(e=>evInWindow(e));
   const nextUpc=UPCOMING[0];
   const nextStart=nextUpc?new Date(nextUpc.timeUTC).getTime():null;
   const msToStart=nextStart?nextStart-now:null;
@@ -1172,11 +1172,15 @@ function renderHero(){
     return'main';
   }
 
-  // build tabs list
+  // how long since the open event started
+  const msSinceOpen=openEv?now-new Date(openEv.timeUTC).getTime():0;
+  const votingMature=openEv&&msSinceOpen>30*3600000; // 30h in = show other tabs too
+
+  // build tabs list — while voting is fresh only show the live tab
   const tabs=[];
-  if(lastEv) tabs.push({key:'last',label:'Last Event'});
+  if(!showLive||votingMature) { if(lastEv) tabs.push({key:'last',label:'Last Event'}); }
   if(showLive) tabs.push({key:'live',label:'● Rating Open',cls:'live-tab'});
-  if(showSoon||(!showLive&&nextUpc)) tabs.push({key:'soon',label:'Up Next',cls:'soon-tab'});
+  if(showSoon||((!showLive||votingMature)&&nextUpc)) tabs.push({key:'soon',label:'Up Next',cls:'soon-tab'});
 
   if(!tabs.length){heroEl.innerHTML='';if(recentLbl)recentLbl.style.marginTop='0';return;}
   if(!tabs.find(t=>t.key===window._heroTab)) window._heroTab=tabs[0].key;
@@ -1208,18 +1212,22 @@ function renderHero(){
     const myOverall=LOCAL.get(openEv.id,'overall');
     const seg=upcSegment();
     const tabFights=(openEv.tabs[seg]||openEv.tabs.main).fights;
-    content=`<div onclick="openEvent('${openEv.id}')">
-      <div class="hero-live"><span class="hero-dot"></span><span class="hero-lbl">Rating Open Now</span><span class="hero-timer" id="heroTimer">${winLeft(openEv)}</span></div>
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:4px">
-        <div>
-          <div class="hero-name">${openEv.name}: ${openEv.subtitle}</div>
+    const openEvIsUpcoming=UPCOMING.some(e=>e.id===openEv.id);
+    const openEvIdx=openEvIsUpcoming?UPCOMING.findIndex(e=>e.id===openEv.id):-1;
+    const openEvClick=openEvIsUpcoming?('openUpcoming('+openEvIdx+')'):("openEvent('"+ openEv.id +"')");
+    content=`<div onclick="${openEvClick}">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="flex:1">
+          <div class="hero-name" style="margin-bottom:2px">${openEv.name}: ${openEv.subtitle||openEv.main}</div>
           <div class="hero-meta">📍 ${openEv.venue} · ${openEv.date}, ${openEv.year}</div>
         </div>
-        <div style="text-align:right;flex-shrink:0">
-          <div class="hero-score-lbl">Your Rating</div>
-          <div class="hero-stars ${myOverall?'rated':''}">${myOverall?'★'.repeat(myOverall.stars)+'☆'.repeat(5-myOverall.stars):'☆☆☆☆☆'}</div>
-          <button class="hero-btn" style="margin-top:8px" onclick="event.stopPropagation();openEvent('${openEv.id}')">Rate →</button>
-        </div>
+        <button onclick="event.stopPropagation();${openEvClick}" style="background:var(--red);color:#fff;border:none;padding:7px 14px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;border-radius:7px;cursor:pointer;flex-shrink:0;white-space:nowrap">Rate Now →</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span class="hero-dot"></span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--red)">Rating Open</span>
+        <span id="heroTimer" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(232,25,44,.7);margin-left:2px">${winLeft(openEv)}</span>
+        ${myOverall?`<span style="margin-left:auto;font-size:12px;color:var(--gold)">${'★'.repeat(myOverall.stars)}${'☆'.repeat(5-myOverall.stars)}</span>`:''}
       </div>
       ${fightListHtml(openEv,tabFights,true)}
     </div>`;
@@ -1252,6 +1260,7 @@ function renderHero(){
   if(recentLbl)recentLbl.style.marginTop='8px';
 
   if(window._ht)clearInterval(window._ht);
+  let _lastSeg=upcSegment();
   window._ht=setInterval(()=>{
     const el=document.getElementById('heroTimer');
     if(!el){clearInterval(window._ht);return;}
@@ -1259,11 +1268,10 @@ function renderHero(){
       const r=winLeft(openEv);if(!r){clearInterval(window._ht);renderHero();return;}el.textContent=r;
     } else if(window._heroTab==='soon'&&nextUpc&&msToStart!==null){
       const ms2=new Date(nextUpc.timeUTC).getTime()-Date.now();
-      if(ms2<0&&ms2<-3*3600000){clearInterval(window._ht);renderHero();return;}
+      if(ms2<0&&ms2<-3*3600000){clearInterval(window._ht);return;}
       el.textContent=ms2>0?formatMs(ms2):'LIVE';
-      // auto-switch segment
       const seg2=upcSegment();
-      if(seg2!==upcSegment()) renderHero();
+      if(seg2!==_lastSeg){_lastSeg=seg2;renderHero();}
     }
   },1000);
 }
@@ -1385,18 +1393,65 @@ function renderUpcoming(){
   document.getElementById('pgNext').disabled=upPage>=total-1;
 }
 
+function hypeCardHtml(){
+  if(!curUpcEv)return '';
+  const ev=curUpcEv;
+  const evId='upc_'+ev.date.replace(/ /g,'_').toLowerCase();
+  const vote=getHypeMeter(evId);
+  const commAvg=hypeMeterAvg(evId).toFixed(1);
+  const commVal=parseFloat(commAvg);
+  const commCol=commVal>=9?'#ef4444':commVal>=7?'#f97316':commVal>=4?'#eab308':'#3b82f6';
+  const pipCols=['#3b82f6','#3b82f6','#3b82f6','#3b82f6','#eab308','#eab308','#eab308','#f97316','#f97316','#ef4444','#ef4444'];
+  const activePip=vote!==null?Math.round(vote):-1;
+  const isOnFire=vote!==null&&vote>=9;
+  const pipHtml=Array.from({length:11},(_,i)=>{
+    const active=activePip>=0&&i<=activePip;
+    const col=pipCols[i];
+    const glow=active&&isOnFire&&i>=9?' box-shadow:0 0 6px 2px '+col+';':'';
+    const anim=active&&isOnFire&&i>=9?' animation:hglow 1.2s ease-in-out infinite alternate;':'';
+    return '<div style="width:6px;height:'+(10+i*3)+'px;border-radius:3px;background:'+(active?col:'var(--border2)')+';flex-shrink:0;'+glow+anim+'"></div>';
+  }).join('');
+  const hasStarted=Date.now()>=new Date(ev.timeUTC).getTime();
+  if(hasStarted)return '';
+  return `<div style="background:var(--s2);border:1px solid var(--border2);border-radius:10px;padding:16px 18px;margin-top:16px">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:12px">Hype Meter</div>
+    <div style="display:flex;align-items:flex-end;gap:3px;height:48px;margin-bottom:10px">${pipHtml}</div>
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:10px">
+      <div><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);margin-bottom:2px">community</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:700;color:${commCol}">${commAvg}<span style="font-size:10px;color:var(--dim)">/10</span></div></div>
+      ${vote!==null?`<div><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);margin-bottom:2px">your vote</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:700;color:var(--text)">${vote}<span style="font-size:10px;color:var(--dim)">/10</span></div></div>`:''}
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">${Array.from({length:11},(_,i)=>`<button onclick="castHypeMeter('${evId}',${i})" style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;padding:5px 10px;border-radius:6px;border:1px solid ${vote===i?pipCols[i]:'var(--border2)'};background:${vote===i?'rgba(59,130,246,.1)':'none'};color:${vote===i?pipCols[i]:'var(--dim)'};cursor:pointer">${i}</button>`).join('')}</div>
+  </div>`;
+}
+
 function renderUpcomingDetail(){
-  const ev=curUpcEv;if(!ev)return;
-  const now=Date.now(),hasStarted=now>=new Date(ev.timeUTC).getTime();
-  const et=fmtET(ev.timeUTC),lt=fmtLocal(ev.timeUTC);
+  const ev=curUpcEv; if(!ev)return;
+  const now=Date.now();
+  const hasStarted=now>=new Date(ev.timeUTC).getTime();
+  const inWin=evInWindow(ev);
+  const et=fmtET(ev.timeUTC), lt=fmtLocal(ev.timeUTC);
+  const evName=(ev.name+': '+ev.main);
+
+  // Build fight sections using fightRowsHtml (same as renderDetail - proven to work)
   const tabOrder=[['main','Main Card'],['prelims','Prelims'],['early','Early Prelims']];
+  const sectionsHtml=tabOrder
+    .filter(([k])=>ev.tabs[k] && ev.tabs[k].fights.filter(f=>f.f1&&f.f1!=='TBA').length>0)
+    .map(([k,label])=>{
+      const fights=ev.tabs[k].fights.filter(f=>f.f1&&f.f1!=='TBA');
+      return '<div class="sc" style="margin-bottom:10px">'
+        +'<div class="sc-head"><div class="sc-title">'+label+'</div></div>'
+        +fightRowsHtml(fights, ev.id, evName, inWin)
+        +'</div>';
+    }).join('');
 
   document.getElementById('upcomingDetailContent').innerHTML=`
     <div class="ev-hcard a0">
       <div class="ev-hcard-top">
-        <div>
-          <div class="ev-hcard-org">UFC · Upcoming</div>
-          <div class="ev-hcard-name">${ev.name}: ${ev.main}</div>
+        <div style="flex:1">
+          <div class="ev-hcard-org">UFC</div>
+          <div class="ev-hcard-name">${evName}</div>
           <div class="ev-hcard-meta">
             <span>📅 ${ev.date}, ${ev.year}</span>
             <span>📍 ${ev.venue}</span>
@@ -1404,29 +1459,17 @@ function renderUpcomingDetail(){
             ${userTZ!=='America/New_York'&&lt?`<span style="color:var(--text2)">📱 ${lt}</span>`:''}
           </div>
         </div>
+        ${inWin?`<button onclick="document.querySelector('#upcomingDetailView .fight-list')?.scrollIntoView({behavior:'smooth'})" style="background:var(--red);color:#fff;border:none;padding:7px 14px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;border-radius:7px;cursor:pointer;flex-shrink:0;white-space:nowrap;align-self:center">Rate Now →</button>`:''}
       </div>
-      ${hasStarted?`<div class="win-row" style="border-color:rgba(232,25,44,.3)">
-        <span class="win-dot"></span>
-        <span class="win-txt" style="color:var(--text2)"><b>🥊 Fights going on</b> — get ready to vote on results</span>
-      </div>`:''}
+      ${inWin?`<div style="display:flex;align-items:center;gap:8px;margin-top:10px"><span class="win-dot"></span><span style="font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--red)">Rating Open</span><span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(232,25,44,.7)">${winLeft(ev)||'soon'}</span></div>`:''}
     </div>
     <div class="a1">
-      ${tabOrder.filter(([k])=>ev.tabs[k]?.fights.filter(f=>f.f1&&f.f1!=='TBA').length>0).map(([k,l])=>{
-        const sectionFights=ev.tabs[k].fights.filter(f=>f.f1&&f.f1!=='TBA');
-        return '<div class="sc" style="margin-bottom:10px">'
-          +'<div class="sc-head"><div class="sc-title">'+l+'</div></div>'
-          +'<div class="fight-list">'
-          +sectionFights.map(f=>{
-            const f1e=f.f1.replace(/'/g,"\'"),f2e=f.f2.replace(/'/g,"\'");
-            return '<div class="fight-row"><div class="fight-info"><div class="fight-name"><span class="fp-trigger" onclick="showFighterPopup(event,\''+f1e+'\',\''+f.cls+'\')">'+f.f1+'</span><span class="fvs">vs</span><span class="fp-trigger" onclick="showFighterPopup(event,\''+f2e+'\',\''+f.cls+'\')">'+f.f2+'</span>'+(f.title?'<span class="fight-title-b">'+f.title+'</span>':'')+'</div><div class="fight-cls">'+f.cls+'</div></div></div>';
-          }).join('')
-          +'</div>'
-          +'</div>';
-      }).join('')}
+      ${sectionsHtml}
       ${hypeCardHtml()}
     </div>
   `;
 }
+
 
 
 
