@@ -477,6 +477,34 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .hero-soon-txt{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;letter-spacing:2px;color:var(--gold);text-transform:uppercase;}
 .hero-soon-timer{font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(230,184,0,.7);margin-left:auto;}
 .hero-segment-lbl{font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:8px;}
+
+/* ── NOW RATING STRIP ── */
+.now-strip{display:flex;align-items:center;gap:10px;padding:8px 0 14px;border-bottom:1px solid var(--border2);margin-bottom:18px;}
+.now-dot{width:8px;height:8px;border-radius:50%;background:var(--red);animation:pulse 2s infinite;flex-shrink:0;}
+.now-label{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--red);}
+.now-ev-name{font-size:14px;font-weight:600;color:var(--text2);margin-left:4px;}
+.now-timer{font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(232,25,44,.6);margin-left:auto;}
+
+/* ── NOW PANELS (community left, vote right) ── */
+.now-panels{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;}
+@media(max-width:680px){.now-panels{grid-template-columns:1fr;}}
+.now-left{background:var(--s1);border:1px solid var(--border2);border-radius:12px;padding:20px;}
+.now-right{background:var(--s1);border:1px solid rgba(232,25,44,.25);border-radius:12px;padding:20px;}
+
+/* ── HOME 3-COL ── */
+.home3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;align-items:start;}
+@media(max-width:900px){.home3{grid-template-columns:1fr 1fr;}}
+@media(max-width:580px){.home3{grid-template-columns:1fr;}}
+.h3col{}
+
+/* ── TOP RATED LIST ── */
+.tr-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);}
+.tr-row:last-child{border-bottom:none;}
+.tr-rank{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);width:16px;flex-shrink:0;text-align:right;}
+.tr-name{flex:1;font-size:12px;font-weight:500;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tr-ev{font-size:10px;color:var(--muted);}
+.tr-sc{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:700;flex-shrink:0;}
+.tr-sc.fire{color:#ef4444;}.tr-sc.hot{color:#ef4444;}.tr-sc.mid{color:#eab308;}.tr-sc.cold{color:#3b82f6;}
 </style>
 </head>
 <body>
@@ -547,9 +575,25 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 <!-- LIST VIEW -->
 <div id="listView" style="display:none">
   <div class="page"><div class="page-inner">
-    <div id="heroRating"></div>
-    <div class="home-cols a1">
-      <div class="home-col-left">
+
+    <!-- NOW RATING strip — only shown when event is in window -->
+    <div id="nowRatingStrip" style="display:none">
+      <div class="now-strip">
+        <span class="now-dot"></span>
+        <span class="now-label">NOW RATING</span>
+        <span class="now-ev-name" id="nowEvName"></span>
+        <span class="now-timer" id="nowTimer"></span>
+      </div>
+      <!-- Two-panel rating block -->
+      <div class="now-panels a0">
+        <div class="now-left" id="nowLeft"></div>
+        <div class="now-right" id="nowRight"></div>
+      </div>
+    </div>
+
+    <!-- Bottom 3-col grid: Recent | Top Rated | Upcoming -->
+    <div class="home3 a1">
+      <div class="h3col">
         <div class="sec-lbl" id="recentLbl">Recent Events</div>
         <div class="ev-grid" id="recentList"></div>
         <div class="pg-bar" id="recPgBar">
@@ -558,7 +602,11 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
           <button class="pg-btn" id="recPgNext" onclick="recNext()">›</button>
         </div>
       </div>
-      <div class="home-col-right">
+      <div class="h3col" id="topRatedCol">
+        <div class="sec-lbl">Top Rated Fights</div>
+        <div id="topRatedList"></div>
+      </div>
+      <div class="h3col">
         <div class="sec-lbl">Upcoming</div>
         <div class="upc-list" id="upcList"></div>
         <div class="pg-bar" id="upPgBar">
@@ -568,6 +616,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
         </div>
       </div>
     </div>
+
   </div></div>
 </div>
 
@@ -685,7 +734,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 // ═══════════════════════════════════════════════════
 // EVENT DATA
 // ═══════════════════════════════════════════════════
-const EVENTS=[
+const _ALL_PAST=[
   {id:'ufc326',name:'UFC 326',subtitle:'Holloway vs. Oliveira 2',
    date:'Mar 7',day:7,year:2026,venue:'T-Mobile Arena · Las Vegas',
    timeUTC:'2026-03-08T03:00:00Z',winOverride:'2026-03-10T06:00:00Z',
@@ -806,7 +855,7 @@ const EVENTS=[
   }},
 ];
 
-const UPCOMING=[
+const _ALL_FUTURE=[
   {id:'ufcfn-emmett',date:'Mar 14',day:14,year:2026,name:'UFC Fight Night',main:'Emmett vs. Vallejos',
    venue:'UFC Apex · Las Vegas',timeUTC:'2026-03-15T01:00:00Z',winOverride:'2026-03-16T13:00:00Z',
    tabs:{
@@ -880,6 +929,14 @@ const UPCOMING=[
     prelims:{label:'Prelims',fights:[]},early:{label:'Early Prelims',fights:[]}
   }},
 ];
+
+// ── ALL EVENTS: one source of truth, auto-classified by time ──
+const ALL_EVENTS=[..._ALL_PAST,..._ALL_FUTURE];
+// EVENTS  = started (timeUTC in past), newest first → shows in Recent
+// UPCOMING = not yet started, soonest first → shows in Upcoming
+// This means Emmett auto-moves to Recent the moment it starts, no manual work needed
+Object.defineProperty(window,'EVENTS',{get:()=>ALL_EVENTS.filter(e=>Date.now()>=new Date(e.timeUTC).getTime()).sort((a,b)=>new Date(b.timeUTC)-new Date(a.timeUTC)),configurable:true});
+Object.defineProperty(window,'UPCOMING',{get:()=>ALL_EVENTS.filter(e=>Date.now()<new Date(e.timeUTC).getTime()).sort((a,b)=>new Date(a.timeUTC)-new Date(b.timeUTC)),configurable:true});
 
 // ═══════════════════════════════════════════════════
 // CONFIG
@@ -1036,6 +1093,21 @@ const PER=4;
 let curEv=null,curUpcEv=null,curTab='main';
 let mStars=0,selF=[],mPF={},pendingEvId='',pendingFightId='',pendingF1='',pendingF2='';
 let popupFighter='',popupFromView='';
+
+// ═══════════════════════════════════════════════════
+// HYPE METER (localStorage)
+// ═══════════════════════════════════════════════════
+function getHypeMeter(evId){ try{const v=localStorage.getItem('fv_hype10_'+evId);return v!==null?parseInt(v):null;}catch{return null;} }
+function setHypeMeter(evId,val){ try{localStorage.setItem('fv_hype10_'+evId,val);}catch{} }
+function hypeMeterAvg(evId){ let h=0;for(let i=0;i<evId.length;i++)h=(h*31+evId.charCodeAt(i))&0xffff; return 4+(h%60)/10; }
+function castHypeMeter(evId,val){ setHypeMeter(evId,val); renderUpcoming(); renderUpcomingDetail(); }
+
+// ═══════════════════════════════════════════════════
+// PAGINATION
+// ═══════════════════════════════════════════════════
+function recPrev(){ if(recPage>0){recPage--;renderRecent();} }
+function recNext(){ const total=Math.ceil(EVENTS.length/PER); if(recPage<total-1){recPage++;renderRecent();} }
+function changePage(dir){ const total=Math.ceil(UPCOMING.length/PER); upPage=Math.max(0,Math.min(total-1,upPage+dir)); renderUpcoming(); }
 let curWCFilter='All';
 let fighterIndex=null,allFighterData=[];
 
@@ -1085,6 +1157,7 @@ function showView(id){
 function goHome(){
   curEv=null;curUpcEv=null;
   showView('listView');
+  renderHero();
   renderRecent();
   renderUpcoming();
 }
@@ -1111,170 +1184,152 @@ function goFighters(){
 // RENDER LIST
 // ═══════════════════════════════════════════════════
 function renderHero(){
-  const heroEl=document.getElementById('heroRating');
-  const recentLbl=document.getElementById('recentLbl');
-  if(!heroEl)return;
-
   const now=Date.now();
-  const lastEv=EVENTS[0]; // most recent past event
   const openEv=EVENTS.find(e=>evInWindow(e))||UPCOMING.find(e=>evInWindow(e));
+  const lastEv=EVENTS[0];
   const nextUpc=UPCOMING[0];
   const nextStart=nextUpc?new Date(nextUpc.timeUTC).getTime():null;
   const msToStart=nextStart?nextStart-now:null;
-
-  // upcoming event phase relative to start
-  // -2h..0: "voting opens soon"
-  // 0..+0.5h: early prelims live
-  // +0.5h..+2.5h: prelims live
-  // +2.5h+: main card live
   const showSoon=!openEv&&msToStart!==null&&msToStart>0&&msToStart<2*3600000;
-  const showLive=!!openEv;
+  const recentLbl=document.getElementById('recentLbl');
 
-  // determine which tab is default
-  if(!window._heroTab) window._heroTab=showLive?'live':showSoon?'soon':'last';
-  if(showLive) window._heroTab='live';
-  else if(showSoon&&window._heroTab==='live') window._heroTab='soon';
-  if(!lastEv&&!openEv&&!showSoon){heroEl.innerHTML='';if(recentLbl)recentLbl.style.marginTop='0';return;}
+  // ── NOW RATING STRIP ─────────────────────────────
+  const strip=document.getElementById('nowRatingStrip');
+  if(openEv){
+    strip.style.display='block';
+    document.getElementById('nowEvName').textContent=openEv.name+': '+(openEv.subtitle||openEv.main);
+    document.getElementById('nowTimer').textContent=winLeft(openEv)||'';
+    if(window._ht)clearInterval(window._ht);
+    window._ht=setInterval(()=>{
+      const el=document.getElementById('nowTimer');
+      if(!el){clearInterval(window._ht);return;}
+      const r=winLeft(openEv);
+      if(!r){clearInterval(window._ht);strip.style.display='none';renderHero();return;}
+      el.textContent=r;
+    },1000);
 
-  function fightListHtml(ev,fights,tabOpen){
-    const allF=Object.values(ev.tabs).flatMap(t=>t.fights);
-    const ratedF=allF.map(f=>({f,a:getAgg(ev.id,dbFid(f),ev)})).filter(x=>x.a&&x.a.cnt>0);
+    // LEFT: community scores panel
+    const allF=Object.values(openEv.tabs).flatMap(t=>t.fights);
+    const ratedF=allF.map(f=>({f,a:getAgg(openEv.id,dbFid(f),openEv)})).filter(x=>x.a&&x.a.cnt>0);
     ratedF.sort((a,b)=>parseFloat(b.a.avg)-parseFloat(a.a.avg));
     const top=ratedF[0];
-    const topBar=top?`<div style="display:flex;align-items:center;gap:8px;background:rgba(230,184,0,.07);border:1px solid rgba(230,184,0,.15);border-radius:7px;padding:6px 12px;margin-bottom:10px">
-      <span style="font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:700;letter-spacing:.8px;color:var(--gold)">TOP FIGHT</span>
-      <span style="flex:1;font-size:13px;font-weight:600">${top.f.f1} vs ${top.f.f2}</span>
-      <span style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;color:var(--gold)">${top.a.avg}</span>
-    </div>`:'';
-    const rows=fights.slice(0,5).map(f=>{
-      const fi=dbFid(f);
-      const myR=LOCAL.get(ev.id,fi);
-      const agg=getAgg(ev.id,fi,ev);
-      const evN=(ev.name+': '+ev.subtitle).replace(/'/g,"\'");
-      const f1e=f.f1.replace(/'/g,"\'"),f2e=f.f2.replace(/'/g,"\'");
-      return `<div class="hero-fight-row">
-        <div class="hero-fight-name">${f.f1}<span class="fvs">vs</span>${f.f2}${f.title?`<span class="fight-title-b" style="font-size:7px;margin-left:4px">${f.title}</span>`:''}</div>
-        ${myR?`<span class="hero-fight-stars">${'★'.repeat(myR.stars)}</span>`:''}
-        ${agg&&agg.cnt>0?`<span class="hero-fight-sc ${SC(agg.avg)}">${agg.avg}</span>`:'<span class="hero-fight-empty">—</span>'}
-        ${tabOpen?`<button onclick="event.stopPropagation();openModal('${evN}','${f1e} vs ${f2e}','${ev.id}','${fi}','${f1e}','${f2e}')" style="background:none;border:1px solid var(--border2);color:var(--dim);padding:2px 7px;font-family:'IBM Plex Mono',monospace;font-size:9px;border-radius:4px;cursor:pointer;transition:all .12s;flex-shrink:0" onmouseenter="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseleave="this.style.borderColor='var(--border2)';this.style.color='var(--dim)'">${myR?'edit':'rate'}</button>`:''}
-      </div>`;
-    }).join('');
-    return topBar+'<div class="hero-fights">'+rows+'</div>';
-  }
+    const evAgg=getEventAvg(openEv);
+    const openEvIsUpcoming=!EVENTS.find(e=>e.id===openEv.id);
+    const openEvClick=openEvIsUpcoming?`openUpcoming(${UPCOMING.findIndex(e=>e.id===openEv.id)})`:`openEvent('${openEv.id}')`;
 
-  // determine auto-tab for upcoming segment
-  function upcSegment(){
-    if(!nextUpc||msToStart===null)return'main';
-    const elapsed=now-nextStart; // negative = hasn't started
-    if(elapsed<0)return'soon';
-    if(elapsed<0.5*3600000)return'early';
-    if(elapsed<2.5*3600000)return'prelims';
-    return'main';
-  }
+    document.getElementById('nowLeft').innerHTML=`
+      <div style="margin-bottom:14px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:8px">Card Score</div>
+        ${evAgg&&evAgg.cnt>0?`
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <span class="ev-sc-n ${SC(evAgg.avg)}" style="font-size:42px">${evAgg.avg}</span>
+            <div>
+              <div class="ev-sc-word ${SC(evAgg.avg)}" style="font-size:14px">${WORD(evAgg.avg)}</div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--dim);margin-top:2px">${evAgg.cnt} rating${evAgg.cnt===1?'':'s'}${evAgg.isDemo?' · <span style="color:var(--muted)">DEMO</span>':''}</div>
+            </div>
+          </div>`:'<div style="font-family:IBM Plex Mono,monospace;font-size:13px;color:var(--muted);padding:8px 0">No ratings yet — be first!</div>'}
+      </div>
+      ${top?`<div style="background:rgba(230,184,0,.07);border:1px solid rgba(230,184,0,.15);border-radius:7px;padding:8px 12px;margin-bottom:14px;display:flex;align-items:center;gap:8px">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:700;letter-spacing:.8px;color:var(--gold)">TOP</span>
+        <span style="flex:1;font-size:12px;font-weight:600">${top.f.f1} vs ${top.f.f2}</span>
+        <span class="tr-sc ${SC(top.a.avg)}" style="font-size:18px">${top.a.avg}</span>
+      </div>`:''}
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:6px">Main Card</div>
+      ${allF.filter(f=>openEv.tabs.main&&openEv.tabs.main.fights.includes(f)).slice(0,5).map(f=>{
+        const a=getAgg(openEv.id,dbFid(f),openEv);
+        return `<div class="hero-fight-row">
+          <div class="hero-fight-name">${f.f1}<span class="fvs">vs</span>${f.f2}</div>
+          ${a&&a.cnt>0?`<span class="hero-fight-sc ${SC(a.avg)}">${a.avg}</span>`:'<span class="hero-fight-empty">—</span>'}
+        </div>`;
+      }).join('')}
+      <button onclick="${openEvClick}" style="margin-top:14px;width:100%;background:none;border:1px solid var(--border2);color:var(--dim);padding:8px;font-family:'IBM Plex Mono',monospace;font-size:10px;border-radius:7px;cursor:pointer" onmouseenter="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseleave="this.style.borderColor='var(--border2)';this.style.color='var(--dim)'">View Full Card →</button>
+    `;
 
-  // how long since the open event started
-  const msSinceOpen=openEv?now-new Date(openEv.timeUTC).getTime():0;
-  const votingMature=openEv&&msSinceOpen>30*3600000; // 30h in = show other tabs too
+    // RIGHT: your vote panel — top 5 main card fights with rate buttons
+    const mainFights=(openEv.tabs.main||openEv.tabs[Object.keys(openEv.tabs)[0]]).fights.slice(0,5);
+    const evN=(openEv.name+': '+(openEv.subtitle||openEv.main)).replace(/'/g,"\'");
+    document.getElementById('nowRight').innerHTML=`
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:14px">Your Ratings</div>
+      ${mainFights.map(f=>{
+        const fi=dbFid(f);
+        const myR=LOCAL.get(openEv.id,fi);
+        const f1e=f.f1.replace(/'/g,"\'"),f2e=f.f2.replace(/'/g,"\'");
+        return `<div class="hero-fight-row" style="gap:6px">
+          <div class="hero-fight-name" style="flex:1">${f.f1}<span class="fvs">vs</span>${f.f2}</div>
+          ${myR?`<span class="hero-fight-stars">${'★'.repeat(myR.stars)}</span>`:''}
+          <button onclick="event.stopPropagation();openModal('${evN}','${f1e} vs ${f2e}','${openEv.id}','${fi}','${f1e}','${f2e}')" style="background:${myR?'none':'var(--red)'};border:1px solid ${myR?'var(--border2)':'var(--red)'};color:${myR?'var(--dim)':'#fff'};padding:3px 10px;font-family:'IBM Plex Mono',monospace;font-size:9px;border-radius:4px;cursor:pointer;flex-shrink:0;transition:all .12s" onmouseenter="this.style.borderColor='var(--red)';this.style.color=this.style.background==='rgb(232, 25, 44)'?'#fff':'var(--red)'" onmouseleave="this.style.borderColor='${myR?'var(--border2)':'var(--red)'}';this.style.color='${myR?'var(--dim)':'#fff'}'">${myR?'edit':'rate'}</button>
+        </div>`;
+      }).join('')}
+      <button onclick="${openEvClick}" style="margin-top:14px;width:100%;background:var(--red);color:#fff;border:none;padding:10px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;border-radius:7px;cursor:pointer;transition:all .2s">Rate All Fights →</button>
+    `;
 
-  // build tabs list — while voting is fresh only show the live tab
-  const tabs=[];
-  if(!showLive||votingMature) { if(lastEv) tabs.push({key:'last',label:'Last Event'}); }
-  if(showLive) tabs.push({key:'live',label:'● Rating Open',cls:'live-tab'});
-  if(showSoon||((!showLive||votingMature)&&nextUpc)) tabs.push({key:'soon',label:'Up Next',cls:'soon-tab'});
+    if(recentLbl)recentLbl.style.marginTop='0';
+  } else {
+    strip.style.display='none';
+    if(window._ht)clearInterval(window._ht);
+    if(recentLbl)recentLbl.style.marginTop='0';
 
-  if(!tabs.length){heroEl.innerHTML='';if(recentLbl)recentLbl.style.marginTop='0';return;}
-  if(!tabs.find(t=>t.key===window._heroTab)) window._heroTab=tabs[0].key;
-
-  const tabsHtml=tabs.map(t=>`<button class="hero-tab ${t.cls||''} ${window._heroTab===t.key?'on':''}" onclick="event.stopPropagation();window._heroTab='${t.key}';renderHero()">${t.label}</button>`).join('');
-
-  let content='';
-
-  if(window._heroTab==='last'&&lastEv){
-    const myOverall=LOCAL.get(lastEv.id,'overall');
-    const agg=getEventAvg(lastEv);
-    content=`<div onclick="openEvent('${lastEv.id}')">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:4px">
-        <div>
-          <div class="hero-name" style="font-size:18px">${lastEv.name}: ${lastEv.subtitle}</div>
-          <div class="hero-meta">📍 ${lastEv.venue} · ${lastEv.date}, ${lastEv.year}</div>
+    // Show "Up Next" in nowRight area if event is coming soon
+    if(showSoon&&nextUpc){
+      strip.style.display='block';
+      document.getElementById('nowEvName').textContent=nextUpc.name+': '+nextUpc.main;
+      document.getElementById('nowTimer').textContent=msToStart>0?formatMs(msToStart):'LIVE';
+      document.getElementById('nowLeft').innerHTML=`
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:12px">Up Next</div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:4px">${nextUpc.name}: ${nextUpc.main}</div>
+        <div style="font-size:12px;color:var(--dim);margin-bottom:14px">📍 ${nextUpc.venue} · ${nextUpc.date}, ${nextUpc.year}</div>
+        ${(nextUpc.tabs.main||nextUpc.tabs[Object.keys(nextUpc.tabs)[0]]).fights.slice(0,5).map(f=>`
+          <div class="hero-fight-row"><div class="hero-fight-name">${f.f1}<span class="fvs">vs</span>${f.f2}</div><span class="hero-fight-empty">—</span></div>`).join('')}
+      `;
+      document.getElementById('nowRight').innerHTML=`
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:8px;text-align:center;padding:20px 0">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold)">Voting Opens Soon</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:36px;font-weight:700;color:var(--text)" id="soonTimer">${formatMs(msToStart)}</div>
+          <div style="font-size:12px;color:var(--dim)">Rating opens when the card starts</div>
         </div>
-        ${agg&&agg.cnt>0?`<div style="text-align:right;flex-shrink:0">
-          <div class="ev-sc-n ${SC(agg.avg)}" style="font-size:32px">${agg.avg}</div>
-          <div class="ev-sc-word ${SC(agg.avg)}">${WORD(agg.avg)}</div>
-          ${myOverall?`<div style="font-size:11px;color:var(--gold);margin-top:2px">${'★'.repeat(myOverall.stars)}${'☆'.repeat(5-myOverall.stars)}</div>`:''}
-        </div>`:''}
-      </div>
-      ${fightListHtml(lastEv,lastEv.tabs.main.fights,false)}
-    </div>`;
-  }
-
-  if(window._heroTab==='live'&&openEv){
-    const myOverall=LOCAL.get(openEv.id,'overall');
-    const seg=upcSegment();
-    const tabFights=(openEv.tabs[seg]||openEv.tabs.main).fights;
-    const openEvIsUpcoming=UPCOMING.some(e=>e.id===openEv.id);
-    const openEvIdx=openEvIsUpcoming?UPCOMING.findIndex(e=>e.id===openEv.id):-1;
-    const openEvClick=openEvIsUpcoming?('openUpcoming('+openEvIdx+')'):("openEvent('"+ openEv.id +"')");
-    content=`<div onclick="${openEvClick}">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-        <div style="flex:1">
-          <div class="hero-name" style="margin-bottom:2px">${openEv.name}: ${openEv.subtitle||openEv.main}</div>
-          <div class="hero-meta">📍 ${openEv.venue} · ${openEv.date}, ${openEv.year}</div>
-        </div>
-        <button onclick="event.stopPropagation();${openEvClick}" style="background:var(--red);color:#fff;border:none;padding:7px 14px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;border-radius:7px;cursor:pointer;flex-shrink:0;white-space:nowrap">Rate Now →</button>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-        <span class="hero-dot"></span>
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--red)">Rating Open</span>
-        <span id="heroTimer" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(232,25,44,.7);margin-left:2px">${winLeft(openEv)}</span>
-        ${myOverall?`<span style="margin-left:auto;font-size:12px;color:var(--gold)">${'★'.repeat(myOverall.stars)}${'☆'.repeat(5-myOverall.stars)}</span>`:''}
-      </div>
-      ${fightListHtml(openEv,tabFights,true)}
-    </div>`;
-  }
-
-  if(window._heroTab==='soon'&&nextUpc){
-    const seg=upcSegment();
-    const segLabel={soon:'Voting Opens Soon',early:'Early Prelims',prelims:'Prelims',main:'Main Card'};
-    const et=fmtET(nextUpc.timeUTC),lt=fmtLocal(nextUpc.timeUTC);
-    const countdown=msToStart>0?formatMs(msToStart):(msToStart>-2.5*3600000?'LIVE NOW':'MAIN CARD');
-    const fights=(nextUpc.tabs&&nextUpc.tabs[seg])||nextUpc.tabs&&nextUpc.tabs.main;
-    const fightPreview=fights?fights.fights.slice(0,5).map(f=>`<div class="hero-fight-row">
-        <div class="hero-fight-name">${f.f1}<span class="fvs">vs</span>${f.f2}${f.title?`<span class="fight-title-b" style="font-size:7px;margin-left:4px">${f.title}</span>`:''}</div>
-        <span class="hero-fight-empty" style="font-size:10px;color:var(--muted)">—</span>
-      </div>`).join(''):'';
-    content=`<div onclick="openUpcoming(0)">
-      <div class="hero-soon-banner"><span class="hero-soon-dot"></span><span class="hero-soon-txt">${segLabel[seg]}</span><span class="hero-soon-timer" id="heroTimer">${countdown}</span></div>
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:4px">
-        <div>
-          <div class="hero-name" style="font-size:18px">${nextUpc.name}: ${nextUpc.main}</div>
-          <div class="hero-meta">📍 ${nextUpc.venue} · ${nextUpc.date}, ${nextUpc.year}</div>
-          <div class="hero-meta" style="margin-top:2px;color:var(--text2)">${et}${userTZ!=='America/New_York'&&lt?' · '+lt:''}</div>
-        </div>
-      </div>
-      ${fightPreview?`<div class="hero-segment-lbl">${segLabel[seg]==='Voting Opens Soon'?'Main Card Preview':segLabel[seg]}</div><div class="hero-fights">${fightPreview}</div>`:''}
-    </div>`;
-  }
-
-  heroEl.innerHTML=`<div class="hero-card a0">${tabsHtml}${content}</div>`;
-  if(recentLbl)recentLbl.style.marginTop='8px';
-
-  if(window._ht)clearInterval(window._ht);
-  let _lastSeg=upcSegment();
-  window._ht=setInterval(()=>{
-    const el=document.getElementById('heroTimer');
-    if(!el){clearInterval(window._ht);return;}
-    if(window._heroTab==='live'&&openEv){
-      const r=winLeft(openEv);if(!r){clearInterval(window._ht);renderHero();return;}el.textContent=r;
-    } else if(window._heroTab==='soon'&&nextUpc&&msToStart!==null){
-      const ms2=new Date(nextUpc.timeUTC).getTime()-Date.now();
-      if(ms2<0&&ms2<-3*3600000){clearInterval(window._ht);return;}
-      el.textContent=ms2>0?formatMs(ms2):'LIVE';
-      const seg2=upcSegment();
-      if(seg2!==_lastSeg){_lastSeg=seg2;renderHero();}
+      `;
+      document.getElementById('nowLabel') && (document.getElementById('nowLabel').style.color='var(--gold)');
+      // override strip dot/label color for "soon"
+      const dot=document.querySelector('.now-dot');
+      const lbl=document.querySelector('.now-label');
+      if(dot)dot.style.background='var(--gold)';
+      if(lbl){lbl.textContent='UP NEXT';lbl.style.color='var(--gold)';}
+      window._ht=setInterval(()=>{
+        const el=document.getElementById('soonTimer');
+        const te=document.getElementById('nowTimer');
+        const ms2=new Date(nextUpc.timeUTC).getTime()-Date.now();
+        if(ms2<=0){clearInterval(window._ht);renderHero();return;}
+        const fmt=formatMs(ms2);
+        if(el)el.textContent=fmt;
+        if(te)te.textContent=fmt;
+      },1000);
     }
-  },1000);
+  }
+
+  // ── TOP RATED: across all rated EVENTS ───────────────────────────────
+  const topRated=[];
+  EVENTS.slice(0,6).forEach(ev=>{
+    Object.values(ev.tabs).flatMap(t=>t.fights).forEach(f=>{
+      const a=getAgg(ev.id,dbFid(f),ev);
+      if(a&&a.cnt>0) topRated.push({f,a,ev});
+    });
+  });
+  topRated.sort((a,b)=>parseFloat(b.a.avg)-parseFloat(a.a.avg));
+  const trList=document.getElementById('topRatedList');
+  if(trList){
+    trList.innerHTML=topRated.slice(0,8).map((x,i)=>`
+      <div class="tr-row" onclick="openEvent('${x.ev.id}')">
+        <span class="tr-rank">${i+1}</span>
+        <div style="flex:1;min-width:0">
+          <div class="tr-name">${x.f.f1} vs ${x.f.f2}</div>
+          <div class="tr-ev">${x.ev.name.replace('UFC Fight Night','FN')}: ${x.ev.subtitle}</div>
+        </div>
+        <span class="tr-sc ${SC(x.a.avg)}">${x.a.avg}</span>
+      </div>
+    `).join('')||'<div style="font-size:12px;color:var(--muted);padding:8px 0">Rate some fights to see top rated</div>';
+  }
 }
+
 
 function formatMs(ms){
   const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);
@@ -1282,7 +1337,6 @@ function formatMs(ms){
 }
 
 function renderRecent(){
-  renderHero();
   const total=Math.ceil(EVENTS.length/PER);
   document.getElementById('recentList').innerHTML=EVENTS.slice(recPage*PER,(recPage+1)*PER).map(ev=>{
     const et=fmtET(ev.timeUTC),lt=fmtLocal(ev.timeUTC);
@@ -1773,7 +1827,7 @@ document.addEventListener('click',e=>{if(!e.target.closest('.fighter-popup')&&!e
 // ═══════════════════════════════════════════════════
 function buildWCFilters(){
   const present=new Set();
-  EVENTS.forEach(ev=>Object.values(ev.tabs).forEach(tab=>tab.fights.forEach(f=>{const wc=WC_MAP[f.cls];if(wc)present.add(wc);})));
+  ALL_EVENTS.forEach(ev=>Object.values(ev.tabs).forEach(tab=>tab.fights.forEach(f=>{const wc=WC_MAP[f.cls];if(wc)present.add(wc);})));
   const available=WC_ORDER.filter(wc=>wc==='All'||present.has(wc));
   document.getElementById('wcFilters').innerHTML=available.map(wc=>`<button class="wc-pill ${curWCFilter===wc?'on':''}" onclick="setWCFilter('${wc}')" title="${WC_FULL[wc]||wc}">${wc}</button>`).join('');
 }
@@ -1781,7 +1835,7 @@ function setWCFilter(wc){curWCFilter=wc;buildWCFilters();filterFighters();}
 
 function buildFighterIndex(){
   const idx={};
-  EVENTS.forEach(ev=>Object.values(ev.tabs).forEach(tab=>tab.fights.forEach(f=>{
+  ALL_EVENTS.forEach(ev=>Object.values(ev.tabs).forEach(tab=>tab.fights.forEach(f=>{
     const fi=dbFid(f);
     const entry={evId:ev.id,fi,f1:f.f1,f2:f.f2,cls:f.cls,title:f.title,wcKey:WC_MAP[f.cls]||'',evName:ev.name+': '+ev.subtitle,date:ev.date+' '+ev.year};
     [f.f1,f.f2].forEach(name=>{if(!idx[name])idx[name]=[];idx[name].push(entry);});
@@ -2120,7 +2174,8 @@ function showToast(msg){document.getElementById('toastMsg').textContent=msg;cons
 checkDB();
 goHome();
 // Load all past event aggregates in parallel, re-render once done
-Promise.all(EVENTS.map(ev=>loadAgg(ev.id))).then(()=>{
+Promise.all(ALL_EVENTS.map(ev=>loadAgg(ev.id))).then(()=>{
+  renderHero();
   renderRecent();
   renderUpcoming();
 });
